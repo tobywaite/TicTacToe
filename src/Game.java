@@ -47,7 +47,7 @@ public class Game{
 				turnsElapsed++;
 				gameState = evaluateGameState(); // Check victory conditions and update the current game state.
 			
-				currentAgent.reportAction(gameState);
+				currentAgent.reportAction(this);
 				
 				// update currentAgent so the other agent takes the next move.
 				if (currentAgent == ourAgent)

@@ -1,0 +1,79 @@
+TicTacToe
+
+Author: Toby Waite
+Date: November 7th, 2010
+
+Description: 
+This is a simple Tic Tac Toe game simulator. Tic Tac Toe is a simple game that 
+is played by two agents. The agents take turns placing "X"s or "O"s on a 3x3 
+grid. The first agent to fill a row, column, or diagonal with three of their 
+symbols wins the game.
+
+This simulator allows you to pit two agents against each other. Five agents 
+have been implemented, including three "random" agents and two machine 
+learning based agents that attempt to "learn" the best strategy for winning 
+the game. These agents are described below.
+
+Installation:
+
+This program can be installed from the TicTacToe directory by executing the following command:
+
+javac -d ./bin/ ./src/TicTacToe.java
+
+Usage:
+
+Use the following command to run a TicTacToe simulation:
+
+java src/TicTacToe <opponent> <numGames> <ourAgent>
+
+where <opponent> is the number of the opposing agent, <numGames> is the number
+of successive simulations to run, and <ourAgent> is the number specifying our 
+agent. The numbers corresponding to the opponents and our agent are described 
+below, in the "Agents" section.
+
+The following example would run 100 games between a RandomAgent and a 
+PolItrAgent:
+
+java src/TicTacToe 1 100 2
+
+Agents:
+
+Opponents:
+
+1 - RandomAgent: This agent simply moves randomly. It selects the square from 
+a uniform distribution over all remaining empty squares.
+
+2 - RandomDefensive: This agent moves randomly as though it were a RandomAgent 
+with 50% probability. With 50% probability, it performs a move that will block 
+its opponent from winning. If the opponent does not have a winning move, the 
+agent just moves randomly.
+
+3 - RandomAggressive: This agent moves randomly with a 20% probability and 
+attempts to make a winning move with 80% probability. If no winning move 
+exists, the agent moves randomly.
+
+4 - RandomBalanced: This agent first checks to see if there are any winning 
+moves. If a winning move is found, the agent executes that move with 80% 
+probability and moves randomly with 20% probability. If no winning move is 
+found, the agent checks for a move that would block an opponent from winning. 
+If a blocking move is found, it executes that move with 80% probability and 
+moves randomly with 20% probability. If neither a winning move nor a blocking 
+move are found, the agent simply moves randomly.
+
+OurAgents:
+
+0 - RandomAgent: This agent acts randomly, as the RandomAgent above in the opponents section.
+
+1 - ValItrAgent: This agent is unimplemented. It will attempt to learn an 
+optimal policy for moving by using the Value Iteration algorithm from machine 
+learning.
+
+2 - PolItrAgent: This agent is unimplemented. It will attempt to learn an 
+optimal policy for moving by using the Policy Iteration algorithm from machine 
+learning.
+
+
+Notes:
+
+Originally implemented for the EECS 491 Advanced Artificial Intelligence class
+at Case Western Reserve University.
