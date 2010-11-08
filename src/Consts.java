@@ -9,8 +9,10 @@ public final class Consts{
 	public static final int AgentRandom= 0;
 	public static final int AgentValItr = 1;
 	public static final int AgentPolItr = 2;
+	public static final int AgentHuman = 3;
 	
 	// name possible game states
+	public static final int GameInvalid = -1;
 	public static final int GameInProgress = 0;
 	public static final int GameWon = 1;
 	public static final int GameLost = 2;
@@ -29,5 +31,5 @@ public final class Consts{
 	public static final int NumSquares = 9;
 	public static final int NoMove = -1;
 	public static final int StateSpaceSize = 5478;
-	
+
 }

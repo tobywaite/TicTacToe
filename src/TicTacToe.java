@@ -67,7 +67,7 @@ public class TicTacToe {
 
 	private void setOpponent(int opp) throws ParameterException{		
 		switch(opp){
- 			case Consts.OpponentRandom: 	opponent = new RandomAgent(); break;
+ 			case Consts.OpponentRandom: 	opponent = new NaiveAgent(); break;
 			case Consts.OpponentDefensive: 	opponent = new DefensiveAgent(); break;
 			case Consts.OpponentAggressive: opponent = new AggressiveAgent(); break;
 			case Consts.OpponentBalanced: 	opponent = new BalancedAgent(); break;
@@ -86,9 +86,10 @@ public class TicTacToe {
 	
 	private void setAgent(int agent) throws ParameterException{
 		switch(agent){
-			case Consts.AgentRandom:	ourAgent = new RandomAgent(); break;
+			case Consts.AgentRandom:	ourAgent = new NaiveAgent(); break;
 			case Consts.AgentValItr: 	ourAgent = new ValueItrAgent(); break;
 			case Consts.AgentPolItr: 	ourAgent = new PolicyItrAgent(); break;
+			case Consts.AgentHuman:		ourAgent = new HumanAgent(); break;
 			default: throw new ParameterException("Agent number out of range!");
 		}
 	}

@@ -1,7 +1,10 @@
+import java.util.Random;
+
 public abstract class Agent {
 
 	protected int team;
-	
+	protected static Random r;
+
 	public void setTeamX() {
 		team = Consts.TeamX;
 	}

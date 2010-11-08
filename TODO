@@ -1,5 +1,4 @@
 TODO:
 
-1) Make RandomAgent an abstract class and create new NaiveAgent to replace its functionality.
-
-2) Write Game.simulateMove() method. Use this to simplify the pickAggressiveMove() and pickDefensiveMove() methods in RandomAgent.
+1) Implement ValueItrAgent 
+2) Implement PolicyItrAgent

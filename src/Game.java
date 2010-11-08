@@ -36,6 +36,22 @@ public class Game{
 			currentAgent = opponent;
 		}
 	}
+	
+	private Game(Game oldGame){
+		ourAgent = oldGame.ourAgent;
+		opponent = oldGame.opponent;
+		currentAgent = oldGame.currentAgent;
+		
+		board = new int[oldGame.board.length];
+		
+		// deep copy board array
+		for(int i=0; i<board.length; i++){
+			board[i] = oldGame.board[i];
+		}
+
+		gameState = oldGame.gameState;
+		turnsElapsed = oldGame.turnsElapsed;
+	}
 
 	public int playGame(){
 		
@@ -56,7 +72,7 @@ public class Game{
 					currentAgent = ourAgent;
 				
 			} catch (InvalidMoveException e) {
-				System.out.println("AgentX tried to execute an impossible move!");
+				System.out.println("Agent tried to execute an impossible move! Try again!");
 				e.printStackTrace();
 			}
 		}
@@ -65,8 +81,8 @@ public class Game{
 	}
 	
 	public void executeMove(int move) throws InvalidMoveException{
-		if (board[move] != 0){
-			String errMessage = "Team " + currentAgent.getTeam() + " tried to move to space " + move + " but that space was already full!";
+		if (move < 0 || move > 8 || board[move] != 0){
+			String errMessage = "Team " + currentAgent.getTeam() + " tried to move to space " + move + " but couldn't!";
 			throw new InvalidMoveException(errMessage);
 		}
 		else if (currentAgent.getTeam() == Consts.TeamX){
@@ -108,12 +124,15 @@ public class Game{
 	
 	// This checks for see if the game has concluded, either by one agent winning or a tie. 
 	// The return value indicates whether our agent won, lost, or tied.
-	private int evaluateGameState() {
+	public int evaluateGameState() {
+		
+		if(gameState == Consts.GameInvalid)
+			return Consts.GameInvalid;
 		
 		/* There are eight columns/rows/diagonals to check. Technically we only need to check the game states
 		   that were affected by the last move, however the code is cleaner if we simply check all
 		   of the combinations. As this is not an expensive operation, this was the implementation used. */
-		
+				
 		boolean gameOver =  checkVictory(0,1,2) || checkVictory(3,4,5) || checkVictory(6,7,8) || // check all rows
 							checkVictory(0,3,6) || checkVictory(1,4,7) || checkVictory(2,5,8) || // check all columns
 							checkVictory(0,4,8) || checkVictory(6,4,2);							 // check both diagonals
@@ -134,5 +153,17 @@ public class Game{
 
 	public int getTurnsElapsed() {
 		return turnsElapsed;
+	}
+
+	public Game simulateMove(int move, int oppMoveType) {
+
+		Game tempGame = new Game(this);
+		
+		try {
+			tempGame.executeMove(move);
+		} catch (InvalidMoveException e) {
+			tempGame.gameState = Consts.GameInvalid;
+		}
+		return tempGame;
 	}
 }
