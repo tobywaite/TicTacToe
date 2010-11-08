@@ -40,7 +40,7 @@ public class Game{
 	public int playGame(){
 		
 		while (gameState == Consts.GameInProgress){
-					
+					 
 			try {
 				int move = currentAgent.pickMove(this);
 				executeMove(move); // execute move picked by agent. If invalid, this will throw InvalidMoveException.
@@ -118,10 +118,8 @@ public class Game{
 							checkVictory(0,3,6) || checkVictory(1,4,7) || checkVictory(2,5,8) || // check all columns
 							checkVictory(0,4,8) || checkVictory(6,4,2);							 // check both diagonals
 		
-		if (gameOver && currentAgent == ourAgent)
-			return Consts.GameWon;
-		else if (gameOver && currentAgent == opponent)
-			return Consts.GameLost;
+		if (gameOver)
+			return (currentAgent == ourAgent) ? Consts.GameWon : Consts.GameLost;
 		else if (turnsElapsed == Consts.NumSquares) // game is a tie if there is no winner after 9 turns.
 			return Consts.GameTied;
 		else

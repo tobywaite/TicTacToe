@@ -22,7 +22,7 @@ public class TicTacToe {
 		// If an incorrect number of parameters is entered,
 		// print function usage.
 		if(args.length != 3){
-			match.usage();
+			printUsage();
 			System.exit(1);
 		}
 		
@@ -34,12 +34,12 @@ public class TicTacToe {
 		}
 		catch(NumberFormatException e){
 			System.out.print("All parameters must be integers!");
-			match.usage();
+			printUsage();
 			System.exit(1);
 		}
 		catch(ParameterException e){
 			System.out.print("Parameter Error: " + e.getMessage());
-			match.usage();
+			printUsage();
 			System.exit(1);
 		}
 		
@@ -60,7 +60,7 @@ public class TicTacToe {
 	private int ties;
 	
 	
-	private void usage(){
+	private static void printUsage(){
 		System.out.println("Usage: java TicTacToe <OpponentType> <NumberOfGames> <AgentType>");
 		System.out.println("Please see README for details about parameters and usage examples.");
 	}

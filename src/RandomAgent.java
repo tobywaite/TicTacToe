@@ -16,7 +16,7 @@ import java.util.Random;
 
 public class RandomAgent extends Agent {
 
-	Random r;
+	private static Random r;
 	
 	public RandomAgent(){
 		r = new Random();
@@ -31,17 +31,19 @@ public class RandomAgent extends Agent {
 	}
 
 	protected int pickRandomMove(Game game){	
-		int selector = r.nextInt(Consts.NumSquares-game.getTurnsElapsed());
+		int selector = r.nextInt(Consts.NumSquares-game.getTurnsElapsed()); // 
+		int selectedMove = 0;
 		
-		for (int i = 0; i<Consts.NumSquares; i++ )
-		
-			if (game.getSquare(i) == Consts.MoveEmpty){
-				if (selector == 0)
-					return i;
+		for (selectedMove = 0; selectedMove<Consts.NumSquares; selectedMove++){	
+			if (game.getSquare(selectedMove) == Consts.MoveEmpty){
+				if (selector == 0){
+					break;
+				}
 				else
-					selector--;		
+					selector--;
 			}
-		return -1; // this return should never be reached. If it is, return an invalid move to indicate that something went wrong.
+		}
+		return selectedMove;
 	}
 	
 	protected int pickDefensiveMove(Game game) {
@@ -61,46 +63,46 @@ public class RandomAgent extends Agent {
 				 (game.getSquare(4) == oppMoveType && game.getSquare(8) == oppMoveType)))    // check diagonal
 			return 0;
 		// Square 1 -- top center
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(1) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(0) == oppMoveType && game.getSquare(2) == oppMoveType)   || // check row
 				 (game.getSquare(4) == oppMoveType && game.getSquare(7) == oppMoveType)))    // check column
 			return 1;
 		// Square 2 -- top right
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(2) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(0) == oppMoveType && game.getSquare(1) == oppMoveType)   || // check row
 				 (game.getSquare(5) == oppMoveType && game.getSquare(8) == oppMoveType)   || // check column
 				 (game.getSquare(4) == oppMoveType && game.getSquare(6) == oppMoveType)))    // check diagonal
 			return 2;
 		// Square 3 -- middle left
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(3) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(4) == oppMoveType && game.getSquare(5) == oppMoveType)   || // check row
 				 (game.getSquare(0) == oppMoveType && game.getSquare(6) == oppMoveType)))    // check column
 			return 3;
 		// Square 4 -- center square
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(4) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(3) == oppMoveType && game.getSquare(5) == oppMoveType)   || // check row
 				 (game.getSquare(1) == oppMoveType && game.getSquare(7) == oppMoveType)   || // check column
 				 (game.getSquare(0) == oppMoveType && game.getSquare(8) == oppMoveType)   || // check diagonal
 				 (game.getSquare(2) == oppMoveType && game.getSquare(6) == oppMoveType)))    // check other diagonal
 			return 4;
 		// Square 5 -- middle right
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(5) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(3) == oppMoveType && game.getSquare(4) == oppMoveType)   || // check row
 				 (game.getSquare(2) == oppMoveType && game.getSquare(8) == oppMoveType)))    // check column
 			return 5;
 		// Square 6 -- bottom left
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(6) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(7) == oppMoveType && game.getSquare(8) == oppMoveType)   || // check row
 				 (game.getSquare(0) == oppMoveType && game.getSquare(3) == oppMoveType)   || // check column
 				 (game.getSquare(2) == oppMoveType && game.getSquare(4) == oppMoveType)))    // check diagonal
 			return 2;
 		// Square 7 -- bottom center
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(7) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(6) == oppMoveType && game.getSquare(8) == oppMoveType)   || // check row
 				 (game.getSquare(1) == oppMoveType && game.getSquare(4) == oppMoveType)))    // check column
 			return 7;
 		// Square 8 -- bottom right
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(8) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(7) == oppMoveType && game.getSquare(8) == oppMoveType)   || // check row
 				 (game.getSquare(0) == oppMoveType && game.getSquare(3) == oppMoveType)   || // check column
 				 (game.getSquare(2) == oppMoveType && game.getSquare(4) == oppMoveType)))    // check diagonal
@@ -126,45 +128,45 @@ public class RandomAgent extends Agent {
 				 (game.getSquare(4) == ourMoveType && game.getSquare(8) == ourMoveType)))    // check diagonal
 			return 0;
 		// Square 1 -- top center
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(1) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(0) == ourMoveType && game.getSquare(2) == ourMoveType)   || // check row
 				 (game.getSquare(4) == ourMoveType && game.getSquare(7) == ourMoveType)))    // check column
 			return 1;
 		// Square 2 -- top right
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(2) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(0) == ourMoveType && game.getSquare(1) == ourMoveType)   || // check row
 				 (game.getSquare(5) == ourMoveType && game.getSquare(8) == ourMoveType)   || // check column
 				 (game.getSquare(4) == ourMoveType && game.getSquare(6) == ourMoveType)))    // check diagonal
 			return 2;
 		// Square 3 -- middle left
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(3) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(4) == ourMoveType && game.getSquare(5) == ourMoveType)   || // check row
 				 (game.getSquare(0) == ourMoveType && game.getSquare(6) == ourMoveType)))    // check column
 			return 3;
 		// Square 4 -- center square
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(4) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(3) == ourMoveType && game.getSquare(5) == ourMoveType)   || // check row
 				 (game.getSquare(1) == ourMoveType && game.getSquare(7) == ourMoveType)   || // check column
 				 (game.getSquare(0) == ourMoveType && game.getSquare(8) == ourMoveType)   || // check diagonal
 				 (game.getSquare(2) == ourMoveType && game.getSquare(6) == ourMoveType)))    // check other diagonal
 			return 4;
 		// Square 5 -- middle right
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(5) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(3) == ourMoveType && game.getSquare(4) == ourMoveType) ||   // check row
 				 (game.getSquare(2) == ourMoveType && game.getSquare(8) == ourMoveType)))    // check column
 			return 5;
 		// Square 6 -- bottom left
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square(game.getSquare(7) == ourMoveType && game.getSquare(8) == ourMoveType) || // check row
+		else if  (game.getSquare(6) == Consts.MoveEmpty && 									 // check this square(game.getSquare(7) == ourMoveType && game.getSquare(8) == ourMoveType) || // check row
 				((game.getSquare(0) == ourMoveType && game.getSquare(3) == ourMoveType)   || // check column
 				 (game.getSquare(2) == ourMoveType && game.getSquare(4) == ourMoveType)))    // check diagonal
 			return 2;
 		// Square 7 -- bottom center
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(7) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(6) == ourMoveType && game.getSquare(8) == ourMoveType)   || // check row
 				 (game.getSquare(1) == ourMoveType && game.getSquare(4) == ourMoveType)))    // check column
 			return 7;
 		// Square 8 -- bottom right
-		else if  (game.getSquare(0) == Consts.MoveEmpty && 									 // check this square
+		else if  (game.getSquare(8) == Consts.MoveEmpty && 									 // check this square
 				((game.getSquare(7) == ourMoveType && game.getSquare(8) == ourMoveType)   || // check row
 				 (game.getSquare(0) == ourMoveType && game.getSquare(3) == ourMoveType)   || // check column
 				 (game.getSquare(2) == ourMoveType && game.getSquare(4) == ourMoveType)))    // check diagonal
@@ -179,7 +181,4 @@ public class RandomAgent extends Agent {
 		else
 			return move;
 	}
-
-
-
 }
