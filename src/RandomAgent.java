@@ -62,7 +62,6 @@ public abstract class RandomAgent extends Agent {
 		
 		// Check for winning moves at each spot. If one is found, return that move.
 		for(int move=0; move<Consts.NumSquares; move++){
-			game.printState();
 			if(game.simulateMove(move, ourMoveType).evaluateGameState() == Consts.GameWon)
 				return move;
 		}

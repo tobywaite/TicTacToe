@@ -13,19 +13,34 @@
  * Date: 	November 5th, 2010.
  */
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 public class TicTacToe {
 
+	private int numGames;
+	private Agent opponent;
+	private Agent ourAgent;
+	
+	private int[] matchResults;
+	
+	private int wins;
+	private int losses;
+	private int ties;
+		
 	public static void main(String[] args) {
 
 		TicTacToe match = new TicTacToe();
-		
-		// If an incorrect number of parameters is entered,
-		// print function usage.
-		if(args.length != 3){
+
+		// If an incorrect number of parameters is entered, print function usage.
+		if(args.length !=3){
 			printUsage();
 			System.exit(1);
 		}
-		
+
 		// parse input to determine game parameters and run game.
 		try{
 			match.setAgent(Integer.parseInt(args[0]));
@@ -42,23 +57,36 @@ public class TicTacToe {
 			printUsage();
 			System.exit(1);
 		}
-		
-		match.run();
-		match.computeResults();
-		match.showResults();
-		
-	}
 
-	private int numGames;
-	private Agent opponent;
-	private Agent ourAgent;
-	
-	private int[] matchResults;
-	
-	private int wins;
-	private int losses;
-	private int ties;
-	
+		boolean keepRunning = true;
+
+		while(keepRunning){
+
+			match.run();
+			match.computeResults();
+			match.showResults();
+			
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+			System.out.println("Enter new opponent number, or 'exit'");
+			System.out.print("Input: ");
+			try {
+				String input = br.readLine();
+				if (input == "exit"){
+					keepRunning = false;
+				}
+				else{
+					match.setOpponent(Integer.parseInt(input));
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (NumberFormatException e){
+				System.out.println("Bad input! Try again.");
+			} catch (ParameterException e) {
+				System.out.println("Invalid Opponent! Try again.");
+			}
+		}
+	}
 	
 	private static void printUsage(){
 		System.out.println("Usage: java TicTacToe <AgentType> <NumberOfGames> <OpponentType>");
@@ -119,8 +147,8 @@ public class TicTacToe {
 	}
 
 	private void showResults(){
-		System.out.println("Won: " + wins);
-		System.out.println("Drawn: " + ties);
-		System.out.println("Lost: " + losses);
+		System.out.println("Won: " + wins + ", " + (wins/(double)(wins + losses + ties)) + "%");
+		System.out.println("Drawn: " + ties + ", " + (ties/(double)(wins + losses + ties)) + "%");
+		System.out.println("Lost: " + losses + ", " + (losses/(double)(wins + losses + ties)) + "%");
 	}
 }
