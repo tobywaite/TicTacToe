@@ -1,8 +1,4 @@
-import java.util.Random;
-
 public class DefensiveAgent extends RandomAgent {
-
-	Random r;
 	
 	public int pickMove(Game game){
 	

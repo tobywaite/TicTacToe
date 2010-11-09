@@ -4,7 +4,6 @@ import java.io.InputStreamReader;
 
 public class HumanAgent extends Agent {
 
-	@Override
 	int pickMove(Game game) {
 		game.printState();
 		String teamStr = (team == Consts.TeamX) ? "X" : "O";
@@ -31,9 +30,7 @@ public class HumanAgent extends Agent {
 		
 	}
 
-	@Override
-	void reportAction(Game game) {
-		// TODO Auto-generated method stub
-
+	public void reportAction(Game currentGame, Game oldGame) {
+		
 	}
 }

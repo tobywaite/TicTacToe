@@ -76,4 +76,8 @@ public abstract class RandomAgent extends Agent {
 		else
 			return move;
 	}
+	
+	public void reportAction(Game currentGame, Game oldGame) {
+		// We don't care about the last move, so do nothing.
+	}
 }

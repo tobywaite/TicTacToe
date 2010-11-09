@@ -2,3 +2,5 @@ TODO:
 
 1) Implement ValueItrAgent 
 2) Implement PolicyItrAgent
+3) Implement StateSpaceHashing that adds new state values to a hash table as they are seen (reduces state space to ~5500).
+4) Game rotations & reflections to reduce state space from 5500 to 765!

@@ -5,7 +5,9 @@ public class PolicyItrAgent extends Agent {
 		return 0;
 	}
 
-	void reportAction(Game game) {
-		// TODO Auto-generated method stub	
+	@Override
+	public void reportAction(Game currentTurn, Game lastTurn) {
+		// TODO Auto-generated method stub
+		
 	}
 }

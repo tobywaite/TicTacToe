@@ -28,17 +28,17 @@ public class TicTacToe {
 		
 		// parse input to determine game parameters and run game.
 		try{
-			match.setOpponent(Integer.parseInt(args[0]));
+			match.setAgent(Integer.parseInt(args[0]));
 			match.setNumGames(Integer.parseInt(args[1]));
-			match.setAgent(Integer.parseInt(args[2]));
+			match.setOpponent(Integer.parseInt(args[2]));
 		}
 		catch(NumberFormatException e){
-			System.out.print("All parameters must be integers!");
+			System.out.println("All parameters must be integers!");
 			printUsage();
 			System.exit(1);
 		}
 		catch(ParameterException e){
-			System.out.print("Parameter Error: " + e.getMessage());
+			System.out.println("Parameter Error: " + e.getMessage());
 			printUsage();
 			System.exit(1);
 		}
@@ -61,7 +61,7 @@ public class TicTacToe {
 	
 	
 	private static void printUsage(){
-		System.out.println("Usage: java TicTacToe <OpponentType> <NumberOfGames> <AgentType>");
+		System.out.println("Usage: java TicTacToe <AgentType> <NumberOfGames> <OpponentType>");
 		System.out.println("Please see README for details about parameters and usage examples.");
 	}
 
@@ -71,6 +71,7 @@ public class TicTacToe {
 			case Consts.OpponentDefensive: 	opponent = new DefensiveAgent(); break;
 			case Consts.OpponentAggressive: opponent = new AggressiveAgent(); break;
 			case Consts.OpponentBalanced: 	opponent = new BalancedAgent(); break;
+			case Consts.OpponentHuman:		opponent = new HumanAgent(); break;
 			default: throw new ParameterException("Opponent number (" + opp + ") out of range!");
 		}
 	}

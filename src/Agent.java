@@ -19,6 +19,6 @@ public abstract class Agent {
 	
 	abstract int pickMove(Game game);
 
-	abstract void reportAction(Game game);
+	public abstract void reportAction(Game currentGame, Game lastTurn);
 
 }

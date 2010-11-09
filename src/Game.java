@@ -56,14 +56,16 @@ public class Game{
 	public int playGame(){
 		
 		while (gameState == Consts.GameInProgress){
-					 
 			try {
+				
+				Game previousTurn = new Game(this);
+				
 				int move = currentAgent.pickMove(this);
 				executeMove(move); // execute move picked by agent. If invalid, this will throw InvalidMoveException.
 				turnsElapsed++;
 				gameState = evaluateGameState(); // Check victory conditions and update the current game state.
 			
-				currentAgent.reportAction(this);
+				currentAgent.reportAction(this, previousTurn);
 				
 				// update currentAgent so the other agent takes the next move.
 				if (currentAgent == ourAgent)
@@ -155,7 +157,7 @@ public class Game{
 		return turnsElapsed;
 	}
 
-	public Game simulateMove(int move, int oppMoveType) {
+	public Game simulateMove(int move, int moveType) {
 
 		Game tempGame = new Game(this);
 		
@@ -165,5 +167,9 @@ public class Game{
 			tempGame.gameState = Consts.GameInvalid;
 		}
 		return tempGame;
+	}
+
+	public int[] getBoard() {
+		return board;
 	}
 }

@@ -4,6 +4,7 @@ public final class Consts{
 	public static final int OpponentDefensive = 1;
 	public static final int OpponentAggressive = 2;
 	public static final int OpponentBalanced = 3;
+	public static final int OpponentHuman = 4;
 	
 	// Our agent types
 	public static final int AgentRandom= 0;
@@ -30,6 +31,14 @@ public final class Consts{
 	// general constants
 	public static final int NumSquares = 9;
 	public static final int NoMove = -1;
-	public static final int StateSpaceSize = 5478;
+	public static final int StateSpaceSize = 19683; // 3^9, three values for each of 9 squares.
+	
+	// learning parameters
+	public static final double DiscountFactor = 0.8;
+	public static final int RewardInProgress = -1;
+	public static final int RewardWon = 10;
+	public static final int RewardLost = -10;
+	public static final int RewardTied = 1;
+	public static final int RewardOther = 0;
 
 }
