@@ -14,8 +14,6 @@
  */
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -123,19 +121,24 @@ public class TicTacToe {
 		}
 	}
 	
-	protected void run(){
+	private void run(){
+		
+		// initialize agents
+		ourAgent.initialize(this);
+		opponent.initialize(this);
+		
 		
 		// only print game results if we are only running one game in the match.
 		boolean printGameResults = (numGames == 1);
 		
 		// run numGames game instances, and record the results.
-		for(int i = 0; i<numGames; i++){
+		/*for(int i = 0; i<numGames; i++){
 			Game gameInstance = new Game(ourAgent, opponent);
 			matchResults[i] = gameInstance.playGame();
 						
 			if(printGameResults)
 				gameInstance.printState();
-		}		
+		}*/		
 	}
 	
 	private void computeResults() {

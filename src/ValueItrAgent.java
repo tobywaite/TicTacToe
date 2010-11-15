@@ -35,8 +35,89 @@ public class ValueItrAgent extends Agent {
 		stateValues = new Hashtable<Integer, Double>();
 	}
 	
-	int pickMove(Game game) {
-		Integer[] possibleMoves = findPossibleMoves(game);
+	public void initialize(TicTacToe match){
+		initStateSpace();
+		trainAgent();
+	}
+	
+	// initialize the value table. This requires fully expanding the game state space.
+	private void initStateSpace() {
+		int[] emptyBoard = new int[] 	{Consts.MoveEmpty, Consts.MoveEmpty, Consts.MoveEmpty, 
+										 Consts.MoveEmpty, Consts.MoveEmpty, Consts.MoveEmpty,  
+										 Consts.MoveEmpty, Consts.MoveEmpty, Consts.MoveEmpty};
+		
+		// recursive descend down the game tree for all possible starting moves.
+		int[] startingMoves = {0,1,2,3,4,5,6,7,8};
+		for(int move : startingMoves){
+			expandStateSpace(emptyBoard,move,Consts.MoveX);
+		}
+	}
+
+	// recursively expand the game tree, exploring all possible moves.
+	private void expandStateSpace(int[] oldBoard, int move, int moveType) {
+		
+		// copy old array into new array
+		int[] board = new int[oldBoard.length];
+		for (int i = 0; i<oldBoard.length; i++)
+			board[i] = oldBoard[i];
+		
+		// perform move on new board
+		
+		board[move] = moveType;
+		
+		int nextMoveType = (moveType==Consts.MoveX) ? Consts.MoveO : Consts.MoveX;
+		
+		// if new game state is not already in hash table, add it and initialize it to 0. 
+		if(!stateValues.containsKey(genStateKey(board)))
+			stateValues.put(genStateKey(board), 0.0);
+		
+		// recursively expand all possible moves.
+		for(int nextMove : findPossibleMoves(board))
+			expandStateSpace(board, nextMove, nextMoveType);
+	}
+
+	private void trainAgent() {
+
+		Game game = new Game();
+		
+		Game test = game.simulateMove(0, Consts.MoveX).simulateMove(1, Consts.MoveO);
+		
+		for(int reflections = 0; reflections <= 1; reflections++){ // once without reflection, once with.
+			for(int rotations = 0; rotations <= 3; rotations++){    // once for each rotation.				
+				System.out.println("Reflects:" + reflections + " Rotations: "+ rotations);
+				printState(rotateAndReflect(test.getBoard(), rotations, reflections));
+			}
+		}
+		
+		System.out.println("state size "+ stateValues.size());
+		
+		int[] test1 =  new int[] {2,1,1,1,1,1};
+		
+		System.out.println("trinary test (111112): "+ ternaryToDecimal(test1));
+		
+		
+	}
+	
+	public void printState(int[] board){
+		
+		String[] strBoard = new String[board.length];
+		
+		for(int i=0; i<board.length; i++){
+			switch(board[i]){
+				case Consts.MoveX: 		strBoard[i] = "X"; break;
+				case Consts.MoveO:		strBoard[i] = "O"; break;
+				case Consts.MoveEmpty: 	strBoard[i] = " "; break;
+			}
+		}
+		
+		System.out.println(strBoard[0] + "|" + strBoard[1] + "|" + strBoard[2]);
+		System.out.println(strBoard[3] + "|" + strBoard[4] + "|" + strBoard[5]);
+		System.out.println(strBoard[6] + "|" + strBoard[7] + "|" + strBoard[8]);
+		System.out.println();
+	}
+
+	public int pickMove(Game game) {
+		Integer[] possibleMoves = findPossibleMoves(game.getBoard());
 		Double maxVal = -99.0; // initialize to an large negative number. All possible states will have higher value than this.
 		int bestMove = Consts.NoMove;  
 		
@@ -47,7 +128,7 @@ public class ValueItrAgent extends Agent {
 			// simulate each possible move, test the value of that action.
 			Game simMove = game.simulateMove(possibleMoves[moveIndex], moveType);
 			// the value of a move is the reward for performing that action plus the discounted value of the resulting state.
-			Double moveValue = reward(simMove) + Consts.DiscountFactor*getValue(simMove);   
+			Double moveValue = getReward(simMove) + Consts.DiscountFactor*getValue(simMove);   
 			if (moveValue > maxVal){
 				bestMove = possibleMoves[moveIndex];
 				maxVal = moveValue;
@@ -61,7 +142,7 @@ public class ValueItrAgent extends Agent {
 	 * a random initial value between -0.5 and 0.5 is added to the stateValues table.
 	 */
 	private Double getValue(Game game) {
-		int key = genStateKey(game);
+		int key = genStateKey(game.getBoard());
 		if(stateValues.containsKey(key))
 			return stateValues.get(key);
 		else{
@@ -74,10 +155,10 @@ public class ValueItrAgent extends Agent {
 	/*
 	 * Given a Game, returns an array containing all allowed moves (corresponding to empty spaces).
 	 */
-	private Integer[] findPossibleMoves(Game game) {
+	private Integer[] findPossibleMoves(int[] board) {
 		ArrayList<Integer> allowedMoves = new ArrayList<Integer>();
-		for(int i=0; i<game.getBoard().length; i++){
-			if (game.getBoard()[i] == Consts.MoveEmpty)
+		for(int i=0; i<board.length; i++){
+			if (board[i] == Consts.MoveEmpty)
 				allowedMoves.add(i);
 		} 
 		return allowedMoves.toArray(new Integer[0]);
@@ -88,8 +169,8 @@ public class ValueItrAgent extends Agent {
 	 * This sets the new value based on the previous state & action, and the reward for current state.
 	 */
 	public void reportAction(Game currentGame, Game lastTurn) { 
-		Double newStateVal = reward(currentGame) + Consts.DiscountFactor*stateValues.get(genStateKey(currentGame));
-		stateValues.put(genStateKey(lastTurn), newStateVal);
+		Double newStateVal = getReward(currentGame) + Consts.DiscountFactor*stateValues.get(genStateKey(currentGame.getBoard()));
+		stateValues.put(genStateKey(lastTurn.getBoard()), newStateVal);
 	}
 
 	/* 
@@ -97,7 +178,7 @@ public class ValueItrAgent extends Agent {
 	 * A winning move provides a +10 reward, while a losing move provides a -10 reward.
 	 * A move that causes a tie results in a +1 move, and any other move gives a -1 reward.
 	 */
-	private int reward(Game game) {
+	private int getReward(Game game) {
 		int reward;
 		switch (game.evaluateGameState()){
 			case Consts.GameInProgress:	reward = Consts.RewardInProgress; 	break;
@@ -122,57 +203,61 @@ public class ValueItrAgent extends Agent {
 	 * This both guarantees that we can minimize our state space and increases the algorithms rate of 
 	 * learning by allowing it to update the value for multiple game states simultaneously.  
 	 */
-	private int genStateKey(Game game){
+	private int genStateKey(int[] board){
 				
-		int minKey = (int) Math.pow(3, 9); // larger than the largest possible key.
+		int maxKey = -1; // smaller than the smallest possible key.
 		int key = 0;
 		
 		// perform all possible rotations and reflections and return the smallest key.
 
 		for(int reflections = 0; reflections <= 1; reflections++){ // once without reflection, once with.
 			for(int rotations = 0; rotations <= 3; rotations++)    // once for each rotation.				
-				key = ternaryToDecimal(rotateAndReflect(game, rotations, reflections));
-				if (key < minKey)
-					minKey = key;
+				key = ternaryToDecimal(rotateAndReflect(board, rotations, reflections));
+				if (key > maxKey)
+					maxKey = key;
 		}
-		return minKey;
+		return maxKey;
 	}
 	
-	private int[] rotateAndReflect(Game game, int rotations, int reflect) {
-		int[] board = game.getBoard();
-		int swap;
+	private int[] rotateAndReflect(int[] board, int rotations, int reflect) {
+		int[] newBoard = new int[board.length];
 		
 		// perform reflection, if specified
 		if(reflect == 1){
 			// swap 0 and 2 across the vertical axis.
-			swap = board[0];
-			board[0] = board[2];
-			board[2] = swap;
+			newBoard[0] = board[2];
+			newBoard[2] = board[0];
 			// swap 3 and 5 across the vertical axis.
-			swap = board[3];
-			board[3] = board[5];
-			board[5] = swap;
+			newBoard[3] = board[5];
+			newBoard[5] = board[3];
 			// swap 6 and 8 across the vertical axis.
-			swap = board[6];
-			board[6] = board[8];
-			board[8] = swap;
+			newBoard[6] = board[8];
+			newBoard[8] = board[6];
+			// center spaces stay the same.
+			newBoard[1] = board[1];
+			newBoard[4] = board[4];
+			newBoard[7] = board[7];
+			
+			return rotateAndReflect(newBoard, rotations, --reflect); // call recursively
 		}
-		// perform the specified number of rotations
-		for(int rotateCount = 0; rotateCount < rotations; rotateCount++){
+		// perform rotation if required.
+		else if(rotations > 0){
 			// rotate corners clockwise
-			swap = board[0];
-			board[0] = board[6];
-			board[6] = board[8];
-			board[8] = board[2];
-			board[2] = swap;
+			newBoard[0] = board[6];
+			newBoard[6] = board[8];
+			newBoard[8] = board[2];
+			newBoard[2] = board[0];
 			// rotate non-corners clockwise
-			swap = board[1];
-			board[1] = board[3];
-			board[3] = board[7];
-			board[7] = board[5];
-			board[5] = swap;
+			newBoard[1] = board[3];
+			newBoard[3] = board[7];
+			newBoard[7] = board[5];
+			newBoard[5] = board[1];
+			// center square stays the same
+			newBoard[4] = board[4];
+			return rotateAndReflect(newBoard, --rotations, reflect); // call recursively
 		}
-		return board;
+		else
+			return board; // base case.
 	}
 
 	/* This method interprets a Game's "board" array as the digits of a ternary (base three) number and returns 

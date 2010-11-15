@@ -5,5 +5,4 @@ public class NaiveAgent extends RandomAgent {
 	public int pickMove(Game game) {
 		return pickRandomMove(game);
 	}
-
 }

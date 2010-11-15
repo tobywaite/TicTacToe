@@ -10,21 +10,30 @@ public class Game{
 	private int gameState;
 	private int turnsElapsed;
 	
+	public Game() {
+		board = new int[] 	{Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty,
+				 Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty,
+				 Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty};
+
+		gameState = Consts.GameInProgress;
+		turnsElapsed = 0;
+	}
+	
 	public Game(Agent ours, Agent theirs){
 		// initialize to an empty board.
 		
 		board = new int[] 	{Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty,
-							 Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty,
-							 Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty};
-		
+				 Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty,
+				 Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty};
+
 		gameState = Consts.GameInProgress;
 		turnsElapsed = 0;
+
+		Random r = new Random();
 		
 		ourAgent = ours;
 		opponent = theirs;
-		
-		Random r = new Random();
-		
+				
 		if (r.nextInt(2) == 0){
 			ourAgent.setTeamX();
 			opponent.setTeamO();
@@ -61,7 +70,7 @@ public class Game{
 				Game previousTurn = new Game(this);
 				
 				int move = currentAgent.pickMove(this);
-				executeMove(move); // execute move picked by agent. If invalid, this will throw InvalidMoveException.
+				executeMove(move, (currentAgent.getTeam() == Consts.TeamX) ? Consts.MoveX : Consts.MoveO); // execute move picked by agent. If invalid, this will throw InvalidMoveException.
 				turnsElapsed++;
 				gameState = evaluateGameState(); // Check victory conditions and update the current game state.
 			
@@ -82,16 +91,13 @@ public class Game{
 		return gameState;
 	}
 	
-	public void executeMove(int move) throws InvalidMoveException{
+	public void executeMove(int move, int moveType) throws InvalidMoveException{
 		if (move < 0 || move > 8 || board[move] != 0){
-			String errMessage = "Team " + currentAgent.getTeam() + " tried to move to space " + move + " but couldn't!";
+			String errMessage = "Team " + moveType + " tried to move to space " + move + " but couldn't!";
 			throw new InvalidMoveException(errMessage);
 		}
-		else if (currentAgent.getTeam() == Consts.TeamX){
-			board[move] = Consts.MoveX;
-		}
-		else{ // currentAgent.getTeam() == Consts.TeamO;
-			board[move] = Consts.MoveO;
+		else{
+			board[move] = moveType;
 		}
 	}
 	
@@ -162,7 +168,7 @@ public class Game{
 		Game tempGame = new Game(this);
 		
 		try {
-			tempGame.executeMove(move);
+			tempGame.executeMove(move, moveType);
 		} catch (InvalidMoveException e) {
 			tempGame.gameState = Consts.GameInvalid;
 		}

@@ -4,7 +4,11 @@ import java.io.InputStreamReader;
 
 public class HumanAgent extends Agent {
 
-	int pickMove(Game game) {
+	public void initialize(TicTacToe match){
+		// Do nothing. Human Agents don't need initialization.
+	}
+	
+	public int pickMove(Game game) {
 		game.printState();
 		String teamStr = (team == Consts.TeamX) ? "X" : "O";
 		System.out.println("You are playing " + teamStr + ".");

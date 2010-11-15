@@ -17,8 +17,11 @@ public abstract class Agent {
 		return team;
 	}
 	
-	abstract int pickMove(Game game);
+	public abstract void initialize(TicTacToe match);
+	
+	public abstract int pickMove(Game game);
 
 	public abstract void reportAction(Game currentGame, Game lastTurn);
-
+	
+	
 }

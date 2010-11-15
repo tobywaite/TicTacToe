@@ -20,6 +20,10 @@ public abstract class RandomAgent extends Agent {
 		r = new Random();
 	}
 	
+	public void initialize(TicTacToe match){
+		// Do nothing. Random Agents need no initialization.
+	}
+	
 	// A random agent does not change its behavior based on its 
 	// previous actions, so this method does nothing.
 	void reportAction(Game game) {}
