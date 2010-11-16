@@ -20,7 +20,7 @@ public abstract class RandomAgent extends Agent {
 		r = new Random();
 	}
 	
-	public void initialize(TicTacToe match){
+	public void initialize(Agent opponent){
 		// Do nothing. Random Agents need no initialization.
 	}
 	

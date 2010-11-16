@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.Random;
+import com.sun.tools.javac.util.Pair;
 
 public abstract class Agent {
 
@@ -17,11 +19,10 @@ public abstract class Agent {
 		return team;
 	}
 	
-	public abstract void initialize(TicTacToe match);
+	public abstract void initialize(Agent enemyAgent);
 	
 	public abstract int pickMove(Game game);
-
-	public abstract void reportAction(Game currentGame, Game lastTurn);
 	
+	public abstract ArrayList<Pair<Game, Double>> getSuccessorStates(Game game);
 	
 }

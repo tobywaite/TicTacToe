@@ -1,3 +1,7 @@
+import java.util.ArrayList;
+
+import com.sun.tools.javac.util.Pair;
+
 public class PolicyItrAgent extends Agent {
 
 	public int pickMove(Game game) {
@@ -5,15 +9,14 @@ public class PolicyItrAgent extends Agent {
 		return 0;
 	}
 
-	@Override
-	public void reportAction(Game currentTurn, Game lastTurn) {
+	public void initialize(Agent opponent) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void initialize(TicTacToe match) {
+	public ArrayList<Pair<Game, Double>> getSuccessorStates(Game game) {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 }

@@ -124,21 +124,22 @@ public class TicTacToe {
 	private void run(){
 		
 		// initialize agents
-		ourAgent.initialize(this);
-		opponent.initialize(this);
+		opponent.initialize(ourAgent);
+		ourAgent.initialize(opponent);
+		
 		
 		
 		// only print game results if we are only running one game in the match.
 		boolean printGameResults = (numGames == 1);
 		
 		// run numGames game instances, and record the results.
-		/*for(int i = 0; i<numGames; i++){
+		for(int i = 0; i<numGames; i++){
 			Game gameInstance = new Game(ourAgent, opponent);
 			matchResults[i] = gameInstance.playGame();
 						
 			if(printGameResults)
 				gameInstance.printState();
-		}*/		
+		}		
 	}
 	
 	private void computeResults() {

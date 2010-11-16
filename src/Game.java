@@ -1,4 +1,8 @@
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
+
+import com.sun.tools.javac.util.Pair;
 
 public class Game{
 	
@@ -6,22 +10,21 @@ public class Game{
 	private Agent opponent;
 	private Agent currentAgent;
 	
+	private TicTacToe match;
+	
 	private int board[]; 
 	private int gameState;
 	private int turnsElapsed;
 	
-	public Game() {
-		board = new int[] 	{Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty,
-				 Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty,
-				 Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty};
+	public Game(int[] oldBoard) {
+		board = Arrays.copyOf(oldBoard, oldBoard.length);
 
 		gameState = Consts.GameInProgress;
 		turnsElapsed = 0;
 	}
 	
 	public Game(Agent ours, Agent theirs){
-		// initialize to an empty board.
-		
+		// initialize to an empty board.		
 		board = new int[] 	{Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty,
 				 Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty,
 				 Consts.MoveEmpty,Consts.MoveEmpty,Consts.MoveEmpty};
@@ -46,18 +49,13 @@ public class Game{
 		}
 	}
 	
-	private Game(Game oldGame){
+	public Game(Game oldGame){
 		ourAgent = oldGame.ourAgent;
 		opponent = oldGame.opponent;
 		currentAgent = oldGame.currentAgent;
 		
-		board = new int[oldGame.board.length];
+		board = Arrays.copyOf(oldGame.board, oldGame.board.length);
 		
-		// deep copy board array
-		for(int i=0; i<board.length; i++){
-			board[i] = oldGame.board[i];
-		}
-
 		gameState = oldGame.gameState;
 		turnsElapsed = oldGame.turnsElapsed;
 	}
@@ -73,8 +71,6 @@ public class Game{
 				executeMove(move, (currentAgent.getTeam() == Consts.TeamX) ? Consts.MoveX : Consts.MoveO); // execute move picked by agent. If invalid, this will throw InvalidMoveException.
 				turnsElapsed++;
 				gameState = evaluateGameState(); // Check victory conditions and update the current game state.
-			
-				currentAgent.reportAction(this, previousTurn);
 				
 				// update currentAgent so the other agent takes the next move.
 				if (currentAgent == ourAgent)
@@ -178,4 +174,24 @@ public class Game{
 	public int[] getBoard() {
 		return board;
 	}
+
+	public ArrayList<Pair<Game, Double>> getSuccessorStates(Agent askingAgent, Game game) {
+		if (askingAgent == ourAgent)
+			return ourAgent.getSuccessorStates(game);
+		else
+			return opponent.getSuccessorStates(game);
+	}
+	
+	/*
+	 * Returns an array containing all allowed moves (corresponding to empty spaces).
+	 */
+	public Integer[] possibleMoves() {
+		ArrayList<Integer> allowedMoves = new ArrayList<Integer>();
+		for(int i=0; i<board.length; i++){
+			if (board[i] == Consts.MoveEmpty)
+				allowedMoves.add(i);
+		} 
+		return allowedMoves.toArray(new Integer[0]);
+	}
+	
 }
