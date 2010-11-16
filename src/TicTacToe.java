@@ -56,34 +56,9 @@ public class TicTacToe {
 			System.exit(1);
 		}
 
-		boolean keepRunning = true;
-
-		while(keepRunning){
-
-			match.run();
-			match.computeResults();
-			match.showResults();
-			
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-			System.out.println("Enter new opponent number, or 'exit'");
-			System.out.print("Input: ");
-			try {
-				String input = br.readLine();
-				if (input == "exit"){
-					keepRunning = false;
-				}
-				else{
-					match.setOpponent(Integer.parseInt(input));
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (NumberFormatException e){
-				System.out.println("Bad input! Try again.");
-			} catch (ParameterException e) {
-				System.out.println("Invalid Opponent! Try again.");
-			}
-		}
+		match.run();
+		match.computeResults();
+		match.showResults();
 	}
 	
 	private static void printUsage(){
@@ -151,8 +126,8 @@ public class TicTacToe {
 	}
 
 	private void showResults(){
-		System.out.println("Won: " + wins + ", " + (wins/(double)(wins + losses + ties)) + "%");
-		System.out.println("Drawn: " + ties + ", " + (ties/(double)(wins + losses + ties)) + "%");
-		System.out.println("Lost: " + losses + ", " + (losses/(double)(wins + losses + ties)) + "%");
+		System.out.println("Won: " + wins + ", " + 100*(wins/(double)(wins + losses + ties)) + "%");
+		System.out.println("Drawn: " + ties + ", " + 100*(ties/(double)(wins + losses + ties)) + "%");
+		System.out.println("Lost: " + losses + ", " + 100*(losses/(double)(wins + losses + ties)) + "%");
 	}
 }

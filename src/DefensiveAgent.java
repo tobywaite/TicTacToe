@@ -23,20 +23,17 @@ public class DefensiveAgent extends RandomAgent {
 		int numMoves = moves.length;
 		Double totalProbability = 1.0;
 		ArrayList<Pair<Game, Double>> sStates = new ArrayList<Pair<Game, Double>>(moves.length);
-
 		
 		int defMove = pickDefensiveMove(game);
-		int moveType = (this.team == Consts.TeamX) ? Consts.MoveX : Consts.MoveO;
 		
 		if (defMove != Consts.NoMove){
-			sStates.add(new Pair<Game, Double>(game.simulateMove(defMove, moveType), 0.5)); // if defensive move exists, 50% chance of picking it.
-			numMoves--;
+			sStates.add(new Pair<Game, Double>(game.simulateMove(defMove), 0.5 + 0.5/numMoves)); // if defensive move exists, 50% chance of picking it.
 			totalProbability -= 0.5;
 		}
 		
 		for (int i = 0; i<moves.length; i++){
 			if(moves[i] != defMove){
-				sStates.add(new Pair<Game, Double>(game.simulateMove(moves[i], moveType), totalProbability/numMoves));
+				sStates.add(new Pair<Game, Double>(game.simulateMove(moves[i]), totalProbability/numMoves));
 			}
 		}
 		return sStates;

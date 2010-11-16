@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Random;
@@ -7,7 +8,7 @@ import com.sun.tools.javac.util.Pair;
 
 public class ValueItrAgent extends Agent {
 
-	private Hashtable<int[], Double> stateValues;
+	private Hashtable<Integer, Double> stateValues;
 	private Agent opponent;
 	
 	/*
@@ -36,53 +37,59 @@ public class ValueItrAgent extends Agent {
 
 	public ValueItrAgent(){
 		r = new Random();
-		stateValues = new Hashtable<int[], Double>();
+		stateValues = new Hashtable<Integer, Double>();
 	}
 	
 	public void initialize(Agent enemyAgent){
-
+		// current opponent required for Machine Learning model.
 		opponent = enemyAgent;
-		
+		// initialize the state value table.
 		initStateSpace();
+		// teach the value iteration agent an optimal policy given the current opponent.
 		trainAgent();
 	}
 	
 	// initialize the value table. This requires fully expanding the game state space.
 	private void initStateSpace() {
-		
-		int[] emptyBoard = new int[] 	{Consts.MoveEmpty, Consts.MoveEmpty, Consts.MoveEmpty, 
-										 Consts.MoveEmpty, Consts.MoveEmpty, Consts.MoveEmpty,  
-										 Consts.MoveEmpty, Consts.MoveEmpty, Consts.MoveEmpty};
+		Game newGame = new Game(this, opponent);		
+		expandStateSpace(newGame);
 
-		Game newGame = new Game(emptyBoard);
-		
-		// recursive descend down the game tree for all possible starting moves.
-		int[] startingMoves = {0,1,4};
-		for(int move : startingMoves){
-			expandStateSpace(newGame,move,Consts.MoveX);
-		}
 	}
 
 	// recursively expand the game tree, exploring all possible moves.
-	private void expandStateSpace(Game oldGame, int move, int moveType) {
-
-		Game game = oldGame.simulateMove(move, moveType);
-		
-		int nextMoveType = (moveType==Consts.MoveX) ? Consts.MoveO : Consts.MoveX;
-		
-		// if new game state is not already in hash table, add it and initialize it to 0. 
-		if(!stateValues.containsKey(game.getBoard()))
-			stateValues.put(game.getBoard(), 0.0);
-
-		if(game.evaluateGameState() == Consts.GameInProgress){
-			// recursively expand all possible moves.
-			for(int nextMove : game.possibleMoves())
-				expandStateSpace(game, nextMove, nextMoveType);
+	private void expandStateSpace(Game game) {
+		int state = game.evaluateGameState();
+		// if key exists, we've expanded this subtree already. Returning now avoids unnecessary traversals.
+		if(stateValues.containsKey(genStateKey(game.getBoard()))){
+			return; 
+		}
+		// if the game has already ended, we are at a terminal game state. 
+		// Add it to the table, but don't recurse.
+		else if(state != Consts.GameInProgress){
+			stateValues.put(genStateKey(game.getBoard()), Consts.InitialValue);
+		}
+		else{
+			stateValues.put(genStateKey(game.getBoard()), Consts.InitialValue);
+			// recurse down the game tree to all remaining moves.
+			for (int nextMove : game.possibleMoves()){
+				expandStateSpace(game.simulateMove(nextMove));
+			}
 		}
 	}
 
+	/* Teach the agent an optimal policy for playing Tic Tac Toe. 
+	 
+  	   This uses a value iteration algorithm. A reward for each possible action (moving, winning, 
+	   drawing, & losing). The value of each move is based on the expected future reward. All game
+	   states are iterated over, propagating the ultimate state values down the game tree over 
+	   multiple iterations. Because there are at most 9 turns in the game, it takes approximately 
+	   10 iterations to propagate the final values to all states.
+	
+	   Please see http://webdocs.cs.ualberta.ca/~sutton/book/ebook/node44.html for more information 
+	   on the details of the Value Iteration algorithm.
+	*/	
 	private void trainAgent() {
-
+				
 		Double deltaValue = 1.0;
 		Double maxDelta = 0.0;
 		
@@ -90,9 +97,8 @@ public class ValueItrAgent extends Agent {
 
 			deltaValue = 0.0;
 
-			
-			Enumeration<int[]> keys = stateValues.keys();			
-			int[] key;
+			Enumeration<Integer> keys = stateValues.keys();			
+			Integer key;
 			Double oldValue, newValue;
 			
 			while(keys.hasMoreElements()){
@@ -102,31 +108,87 @@ public class ValueItrAgent extends Agent {
 				newValue = stateValues.get(key);
 				deltaValue = Math.max(Math.abs(oldValue-newValue), deltaValue);
 			}	
-			System.out.print("deltaValue = " + deltaValue);
 		}
 	}
 	
-	private void updateValue(int[] key) {
+	private void updateValue(Integer key) {
+		// Create an instance of a game that matches the current key.
+		Game game = gameFromKey(key);
 		
-		Game game = new Game(key);
-		int maxReward = -1;
-		int maxAction = -1;
-		int moveReward;
-		int moveType = (this.team == Consts.TeamX) ? Consts.MoveX : Consts.MoveO;
-		
-		for(int move : game.possibleMoves()){
-			moveReward = getReward(game.simulateMove(move, moveType));
-			if(moveReward > maxReward){
-				maxReward = moveReward;
-				maxAction = move;
+		if(game.evaluateGameState() != Consts.GameInProgress){
+			if(game.evaluateGameState() == Consts.GameLost){
+				System.out.println("loststate");
 			}
+			stateValues.put(key, (double)getReward(game));
+			return;
 		}
+		
+		// initialize Value Iteration parameters.
+		Double maxReward = -20.0;
+		Double moveValue;
+		int maxAction = Consts.NoMove;
+		
+		// find the action with the best reward.
+		for(int move : game.possibleMoves()){
+			Game nextTurn = game.simulateMove(move);
+			moveValue = (double)getReward(nextTurn);
+			if(moveValue < -1.0){
+				System.out.println("Found losing opponents move");
+			}
+
+			if(nextTurn.evaluateGameState() != Consts.GameInProgress){
+				if(moveValue > maxReward){
+					maxReward = moveValue;
+					maxAction = move;
+				}
+				continue;
+			}
 			
-		Double newValue = (double)maxReward;
-		ArrayList<Pair<Game, Double>> successorStates = opponent.getSuccessorStates(game);
-		for(Pair<Game, Double> state : successorStates){
-			newValue += Consts.DiscountFactor * state.snd * getValue(state.fst);
+			// ask opponent for transition probabilities to all next states for our best move.
+			ArrayList<Pair<Game, Double>> successorStates = 
+				opponent.getSuccessorStates(nextTurn);
+
+			// The value of the current square is the reward for the last action plus the sum of the value 
+			// over all possible successor states weighted by each state's transition probability and
+			// multiplied by the discount factor.
+			for(Pair<Game, Double> successor : successorStates){
+				try{
+					moveValue += Consts.DiscountFactor * getValue(successor.fst) * successor.snd; // snd is transition probability
+				} catch(InvalidMoveException e){
+					System.out.println(e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			if(moveValue > maxReward){
+				maxReward = moveValue;
+				maxAction = move;
+			}		
 		}
+		// update value table.
+		stateValues.put(key, maxReward);
+	}
+
+	// Given a gameState hash key, create a game with equivalent state.
+	private Game gameFromKey(Integer key) {
+		// convert ternary key to game board representation. Create a new game with that board.
+		int[] board = new int[9];
+		int xCount = 0, oCount = 0;
+		Integer remainingKey = key;
+		for(int i=board.length-1; i>=0; i--){
+			board[i] = (int) Math.floor(remainingKey/Math.pow(3, i));
+			remainingKey -= Math.pow(3, i) * board[i];
+			if(board[i] == Consts.MoveX)
+				xCount++;
+			else if(board[i] == Consts.MoveO)
+				oCount++;
+		}
+		
+		Game game;
+		if(xCount > oCount)
+			game = new Game(opponent, this, board);
+		else
+			game = new Game(this, opponent, board);
+		return game;
 	}
 
 	public void printState(int[] board){
@@ -151,46 +213,35 @@ public class ValueItrAgent extends Agent {
 		Integer[] possibleMoves = game.possibleMoves();
 		Double maxVal = -99.0; // initialize to an large negative number. All possible states will have higher value than this.
 		int bestMove = Consts.NoMove;  
-		
-		int moveType = (team == Consts.TeamX) ? Consts.MoveX : Consts.MoveO;
-		
+				
 		// iterate over all possible moves and select the one with the highest value.
 		for(int moveIndex=0; moveIndex<possibleMoves.length; moveIndex++){
-			// simulate each possible move, test the value of that action.
-			Game simMove = game.simulateMove(possibleMoves[moveIndex], moveType);
-			// the value of a move is the reward for performing that action plus the discounted value of the resulting state.
-			Double moveValue = getReward(simMove) + Consts.DiscountFactor*getValue(simMove);   
-			if (moveValue > maxVal){
-				bestMove = possibleMoves[moveIndex];
-				maxVal = moveValue;
+			try{
+				Game simMove = game.simulateMove(possibleMoves[moveIndex]);
+				Double simValue = getValue(simMove);
+				if(simValue > maxVal){
+					maxVal = simValue;
+					bestMove = possibleMoves[moveIndex];
+				}
+			}
+			catch (InvalidMoveException e){
+				System.out.println("Agent Picked Invalid move!");
+				System.out.println(e.getMessage());
+				System.exit(1);
 			}
 		}
 		return bestMove;
 	}
 	
-	/*
-	 * Given a game, the current value for the state of that Game. If no value currently exists, 
-	 * a random initial value between -0.5 and 0.5 is added to the stateValues table.
-	 */
-	private Double getValue(Game game) {
-		int[] key = genStateKey(game.getBoard());
+	// Given a game board, return the current value for the state of that Game. 
+	private Double getValue(Game game) throws InvalidMoveException {
+		int key = genStateKey(game.getBoard());
 		if(stateValues.containsKey(key))
 			return stateValues.get(key);
 		else{
-			Double initVal = 0.0; // initial value is always 0.
-			stateValues.put(key, initVal);
-			return initVal;
+			throw new InvalidMoveException("value did not exist in stateValues table!");
 		}
 	} 
-
-	/* 
-	 * When receiving a action report, update the stateValues table per the Value Iteration algorithm. 
-	 * This sets the new value based on the previous state & action, and the reward for current state.
-	 */
-	public void reportAction(Game currentGame, Game lastTurn) { 
-		Double newStateVal = getReward(currentGame) + Consts.DiscountFactor*stateValues.get(genStateKey(currentGame.getBoard()));
-		stateValues.put(genStateKey(lastTurn.getBoard()), newStateVal);
-	}
 
 	/* 
 	 * This describes the reward function for an action based on the resulting game state.
@@ -222,66 +273,63 @@ public class ValueItrAgent extends Agent {
 	 * This both guarantees that we can minimize our state space and increases the algorithms rate of 
 	 * learning by allowing it to update the value for multiple game states simultaneously.  
 	 */
-	private int[] genStateKey(int[] board){
+	private int genStateKey(int[] board){
 				
-		int maxKeyHash = -1; // smaller than the smallest possible key.
-		int keyHash = 0;
-		int[] bestKey = new int[9];
-		int[] transformedBoard = new int[9];
-		// perform all possible rotations and reflections and return the smallest key.
-
-		for(int reflections = 0; reflections <= 1; reflections++){ // once without reflection, once with.
-			for(int rotations = 0; rotations <= 3; rotations++)    // once for each rotation.				
-				transformedBoard = rotateAndReflect(board, rotations, reflections);
-				keyHash = ternaryToDecimal(transformedBoard);
-				if (keyHash > maxKeyHash){
-					maxKeyHash = keyHash;
-					bestKey = transformedBoard;
-				}
-		}
-		return bestKey;
+//		int maxKey = -1; // smaller than the smallest possible key.
+//		int keyHash = 0;
+//		// perform all possible rotations and reflections and return the smallest key.
+//
+//		for(int reflections = 0; reflections <= 1; reflections++){ // once without reflection, once with.
+//			for(int rotations = 0; rotations <= 3; rotations++)    // once for each rotation.				
+//				keyHash = ternaryToDecimal(rotateAndReflect(board, rotations, reflections));
+//				if (keyHash > maxKey)
+//					maxKey = keyHash;
+//		}
+//		return maxKey;
+		
+		return(ternaryToDecimal(board));
 	}
 	
-	private int[] rotateAndReflect(int[] board, int rotations, int reflect) {
-		int[] newBoard = new int[board.length];
-		
-		// perform reflection, if specified
-		if(reflect == 1){
-			// swap 0 and 2 across the vertical axis.
-			newBoard[0] = board[2];
-			newBoard[2] = board[0];
-			// swap 3 and 5 across the vertical axis.
-			newBoard[3] = board[5];
-			newBoard[5] = board[3];
-			// swap 6 and 8 across the vertical axis.
-			newBoard[6] = board[8];
-			newBoard[8] = board[6];
-			// center spaces stay the same.
-			newBoard[1] = board[1];
-			newBoard[4] = board[4];
-			newBoard[7] = board[7];
-			
-			return rotateAndReflect(newBoard, rotations, --reflect); // call recursively
-		}
-		// perform rotation if required.
-		else if(rotations > 0){
-			// rotate corners clockwise
-			newBoard[0] = board[6];
-			newBoard[6] = board[8];
-			newBoard[8] = board[2];
-			newBoard[2] = board[0];
-			// rotate non-corners clockwise
-			newBoard[1] = board[3];
-			newBoard[3] = board[7];
-			newBoard[7] = board[5];
-			newBoard[5] = board[1];
-			// center square stays the same
-			newBoard[4] = board[4];
-			return rotateAndReflect(newBoard, --rotations, reflect); // call recursively
-		}
-		else
-			return board; // base case.
-	}
+//	private int[] rotateAndReflect(int[] board, int rotations, int reflect) {
+//		int[] newBoard = new int[board.length];
+//		
+//		// perform reflection, if specified
+//		if(reflect == 1){
+//			// swap 0 and 2 across the vertical axis.
+//			newBoard[0] = board[2];
+//			newBoard[2] = board[0];
+//			// swap 3 and 5 across the vertical axis.
+//			newBoard[3] = board[5];
+//			newBoard[5] = board[3];
+//			// swap 6 and 8 across the vertical axis.
+//			newBoard[6] = board[8];
+//			newBoard[8] = board[6];
+//			// center spaces stay the same.
+//			newBoard[1] = board[1];
+//			newBoard[4] = board[4];
+//			newBoard[7] = board[7];
+//			
+//			return rotateAndReflect(newBoard, rotations, --reflect); // call recursively
+//		}
+//		// perform rotation if required.
+//		else if(rotations > 0){
+//			// rotate corners clockwise
+//			newBoard[0] = board[6];
+//			newBoard[6] = board[8];
+//			newBoard[8] = board[2];
+//			newBoard[2] = board[0];
+//			// rotate non-corners clockwise
+//			newBoard[1] = board[3];
+//			newBoard[3] = board[7];
+//			newBoard[7] = board[5];
+//			newBoard[5] = board[1];
+//			// center square stays the same
+//			newBoard[4] = board[4];
+//			return rotateAndReflect(newBoard, --rotations, reflect); // call recursively
+//		}
+//		else
+//			return board; // base case.
+//	}
 
 	/* This method interprets a Game's "board" array as the digits of a ternary (base three) number and returns 
 	 * the decimal representation of that number. This is used to calculate game state hash values.
@@ -295,7 +343,6 @@ public class ValueItrAgent extends Agent {
 	}
 
 	public ArrayList<Pair<Game, Double>> getSuccessorStates(Game game) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

@@ -13,8 +13,7 @@ public class HumanAgent extends Agent {
 	
 	public int pickMove(Game game) {
 		game.printState();
-		String teamStr = (team == Consts.TeamX) ? "X" : "O";
-		System.out.println("You are playing " + teamStr + ".");
+		System.out.println("You are playing 'O'.");
 		System.out.println("Where would you like to move? Select an empty space based on the following diagram:");
 		System.out.println("0|1|2\n" +
 				           "3|4|5\n" +
@@ -41,12 +40,11 @@ public class HumanAgent extends Agent {
 	public ArrayList<Pair<Game, Double>> getSuccessorStates(Game game) {
 		
 		Integer[] moves = game.possibleMoves();
-		int moveType = (this.team == Consts.TeamX) ? Consts.MoveX : Consts.MoveO;
 		
 		ArrayList<Pair<Game, Double>> sStates = new ArrayList<Pair<Game, Double>>(moves.length);
 		
 		for (int i = 0; i<moves.length; i++){
-			Pair<Game, Double> state = new Pair<Game, Double>(game.simulateMove(moves[i], moveType), 1.0/moves.length);
+			Pair<Game, Double> state = new Pair<Game, Double>(game.simulateMove(moves[i]), 1.0/moves.length);
 			sStates.add(state);
 		}
 		

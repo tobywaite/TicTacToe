@@ -31,7 +31,6 @@ public final class Consts{
 	// general constants
 	public static final int NumSquares = 9;
 	public static final int NoMove = -1;
-	public static final int StateSpaceSize = 19683; // 3^9, three values for each of 9 squares.
 	
 	// learning parameters
 	public static final double DiscountFactor = 0.8;
@@ -40,5 +39,6 @@ public final class Consts{
 	public static final int RewardLost = -10;
 	public static final int RewardTied = 1;
 	public static final int RewardOther = 0;
+	public static final Double InitialValue = 0.0;
 
 }

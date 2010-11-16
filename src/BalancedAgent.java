@@ -24,15 +24,13 @@ public class BalancedAgent extends RandomAgent {
 		Integer[] moves = game.possibleMoves();
 		int numMoves = moves.length;
 		Double totalProbability = 1.0;
-		ArrayList<Pair<Game, Double>> sStates = new ArrayList<Pair<Game, Double>>(moves.length);
-		int moveType = (this.team == Consts.TeamX) ? Consts.MoveX : Consts.MoveO;
-		
+		ArrayList<Pair<Game, Double>> sStates = new ArrayList<Pair<Game, Double>>(moves.length);		
 		// check for aggressive move
 		int balMove = pickAggressiveMove(game);
 		
 		if (balMove != Consts.NoMove){
 			// if found, assign high probability to that move.
-			sStates.add(new Pair<Game, Double>(game.simulateMove(balMove, moveType), 0.8)); // if aggressive move exists, 80% chance of picking it.
+			sStates.add(new Pair<Game, Double>(game.simulateMove(balMove), 0.8)); // if aggressive move exists, 80% chance of picking it.
 			numMoves--;
 			totalProbability -= 0.8;
 		}
@@ -40,7 +38,7 @@ public class BalancedAgent extends RandomAgent {
 			// check for defensive move.
 			balMove = pickDefensiveMove(game);
 			if (balMove != Consts.NoMove){
-				sStates.add(new Pair<Game, Double>(game.simulateMove(balMove, moveType), 0.8)); // if aggressive move exists, 80% chance of picking it.
+				sStates.add(new Pair<Game, Double>(game.simulateMove(balMove), 0.8)); // if aggressive move exists, 80% chance of picking it.
 				numMoves--;
 				totalProbability -= 0.8;
 			}
@@ -48,7 +46,7 @@ public class BalancedAgent extends RandomAgent {
 		// distribute remaining probability over remaining moves.
 		for (int i = 0; i<moves.length; i++){
 			if(moves[i] != balMove){
-				sStates.add(new Pair<Game, Double>(game.simulateMove(moves[i], moveType), totalProbability/numMoves));
+				sStates.add(new Pair<Game, Double>(game.simulateMove(moves[i]), totalProbability/numMoves));
 			}
 		}
 		return sStates;

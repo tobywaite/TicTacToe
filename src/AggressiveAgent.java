@@ -25,19 +25,17 @@ public class AggressiveAgent extends RandomAgent {
 		Double totalProbability = 1.0;
 		ArrayList<Pair<Game, Double>> sStates = new ArrayList<Pair<Game, Double>>(moves.length);
 
-		
 		int aggMove = pickAggressiveMove(game);
-		int moveType = (this.team == Consts.TeamX) ? Consts.MoveX : Consts.MoveO;
 		
 		if (aggMove != Consts.NoMove){
-			sStates.add(new Pair<Game, Double>(game.simulateMove(aggMove, moveType), 0.8)); // if aggressive move exists, 80% chance of picking it.
+			sStates.add(new Pair<Game, Double>(game.simulateMove(aggMove), 0.8)); // if aggressive move exists, 80% chance of picking it.
 			numMoves--;
 			totalProbability -= 0.8;
 		}
 		
 		for (int i = 0; i<moves.length; i++){
 			if(moves[i] != aggMove){
-				sStates.add(new Pair<Game, Double>(game.simulateMove(moves[i], moveType), totalProbability/numMoves));
+				sStates.add(new Pair<Game, Double>(game.simulateMove(moves[i]), totalProbability/numMoves));
 			}
 		}
 		return sStates;
