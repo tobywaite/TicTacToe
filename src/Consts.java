@@ -40,5 +40,6 @@ public final class Consts{
 	public static final int RewardTied = 1;
 	public static final int RewardOther = 0;
 	public static final Double InitialValue = 0.0;
+	public static final Integer InitialPolicy = 0;
 
 }

@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Random;
@@ -116,9 +115,6 @@ public class ValueItrAgent extends Agent {
 		Game game = gameFromKey(key);
 		
 		if(game.evaluateGameState() != Consts.GameInProgress){
-			if(game.evaluateGameState() == Consts.GameLost){
-				System.out.println("loststate");
-			}
 			stateValues.put(key, (double)getReward(game));
 			return;
 		}
@@ -126,16 +122,13 @@ public class ValueItrAgent extends Agent {
 		// initialize Value Iteration parameters.
 		Double maxReward = -20.0;
 		Double moveValue;
+		
 		int maxAction = Consts.NoMove;
 		
 		// find the action with the best reward.
 		for(int move : game.possibleMoves()){
 			Game nextTurn = game.simulateMove(move);
 			moveValue = (double)getReward(nextTurn);
-			if(moveValue < -1.0){
-				System.out.println("Found losing opponents move");
-			}
-
 			if(nextTurn.evaluateGameState() != Consts.GameInProgress){
 				if(moveValue > maxReward){
 					maxReward = moveValue;
