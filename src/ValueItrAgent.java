@@ -1,44 +1,52 @@
+/* 
+ * Tic Tac Toe ÐÊA simple machine learning simulator.
+ * 
+ * Class: ValueItrAgent
+ * 
+ * This agent uses machine learning to "learn" how to win Tic Tac Toe. The algorithm used is Value Iteration.
+ * The agent receives a reward for reaching each game state. Reaching a winning state returns a large positive reward,
+ * reaching a losing state receives a large negative reward, a tying game returns a small positive reward, and any
+ * other state returns a small negative reward. Each state is initialized to a random value, and the value of each 
+ * state is iteratively updated based on the reward for reaching that state and the expected value of subsequent
+ * states. Over a number of iterations, the value table converges to an optimal set of values. 
+ * Once the value table has converged to its final value, the optimal policy for the agent can be executed by selecting
+ * the move out of all possible moves that has the largest expected value.
+ * 
+ *  This algorithm is an offline, model based algorithm. The optimal policy of the agent is calculated when the agent
+ *  is initialized, and relies on have the game and opposing agent be fully observable. By observing the game board and
+ *  being able to predict the transition probability of an opponents moves, this agent can learn a policy that will 
+ *  maximize its expected reward.
+ *  
+ *  More information about value iteration can be found here: http://webdocs.cs.ualberta.ca/~sutton/book/ebook/node44.html
+ *  
+ *  Note: This agent does not play a "perfect" game of tic tac toe. Rather, it attempts to maximize its expected reward.
+ *   This results in the agent winning frequently against the "Random" agents, but occasionally losing because of the
+ *   random nature of the opponents.
+ * 
+ * Author: 	Toby Waite
+ * Contact: toby.waite@gmail.com 
+ * Updated: November 16th, 2010.
+ */
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Random;
-
 import com.sun.tools.javac.util.Pair;
 
 public class ValueItrAgent extends Agent {
 
+	// A hashtable is used to store the state values for tic tac toe. This allows us to store only values of reachable
+	//  tic tac toe states (5478 states), rather than all 19,683 (3^9) possible configurations of the 3x3 grid.
 	private Hashtable<Integer, Double> stateValues;
 	private Agent opponent;
-	
-	/*
-	 *  Each of the 9 cells in a Tic Tac Toe board can hold 3 values. Therefore, The overall statespace 
-	 *  of the Tic Tac Toe board is 3^9, or 19,683. However, many of these states are unreachable in an 
-	 *  actual game Ð a configuration consisting of all "X"s, for example. Taking this into account, 
-	 *  there are 5478 reachable states. However, the Tic Tac Toe board is symmetrical along four axes 
-	 *  (horizontal, vertical, and both diagonals). Therefore, for each state there could be as many as
-	 *  seven additional rotated and reflected states which are essentially identical. Taking this into 
-	 *  account reduces the final state space to 765 unique, reachable states. 
-	 *  
-	 *   In this implementation, we use a hash table to store these values. We add (and initialize) new 
-	 *   state values to the table as they are encountered. This way, only reachable states will be 
-	 *   stored, reducing the state space from 19,683 to 5,478 possible states.
-	 *   
-	 *   When hashing a game state, we calculate an integer key based on the current game state and the
-	 *   seven equivalent rotations and reflections of that game state. The lowest key of these is 
-	 *   selected as the key used to represent the state. This way we can further limit the state 
-	 *   space, reducing the maximum number of stored state-value pairs to only 765 states! 
-	 *   
-	 *   This results in a a reduction of memory usage by a factor of over 25.7!
-	 *   
-	 *   Please see http://en.wikipedia.org/wiki/Tic-tac-toe for more information on the size of the 
-	 *   Tic Tac Toe state space.
-	 */
 
 	public ValueItrAgent(){
 		r = new Random();
 		stateValues = new Hashtable<Integer, Double>();
 	}
 	
+	// Initialize the Agent. This involves fully exploring the state space, and then iteratively updating the value table.
 	public void initialize(Agent enemyAgent){
 		// current opponent required for Machine Learning model.
 		opponent = enemyAgent;
@@ -48,11 +56,10 @@ public class ValueItrAgent extends Agent {
 		trainAgent();
 	}
 	
-	// initialize the value table. This requires fully expanding the game state space.
+	// initialize the value table. This requires fully expanding the game state space to add each reachable state to the table.
 	private void initStateSpace() {
-		Game newGame = new Game(this, opponent);		
-		expandStateSpace(newGame);
-
+		Game newGame = new Game(this, opponent);	
+		expandStateSpace(newGame); // begin recursing down the game tree. 
 	}
 
 	// recursively expand the game tree, exploring all possible moves.
@@ -76,22 +83,13 @@ public class ValueItrAgent extends Agent {
 		}
 	}
 
-	/* Teach the agent an optimal policy for playing Tic Tac Toe. 
-	 
-  	   This uses a value iteration algorithm. A reward for each possible action (moving, winning, 
-	   drawing, & losing). The value of each move is based on the expected future reward. All game
-	   states are iterated over, propagating the ultimate state values down the game tree over 
-	   multiple iterations. Because there are at most 9 turns in the game, it takes approximately 
-	   10 iterations to propagate the final values to all states.
-	
-	   Please see http://webdocs.cs.ualberta.ca/~sutton/book/ebook/node44.html for more information 
-	   on the details of the Value Iteration algorithm.
-	*/	
+	// This implements the value iteration algorithm (described above) to teach the agent an optimal policy.
 	private void trainAgent() {
 				
 		Double deltaValue = 1.0;
 		Double maxDelta = 0.0;
 		
+		// iterate until the maximum change in value from the last iteration is zero. 
 		while(deltaValue > maxDelta){
 
 			deltaValue = 0.0;
@@ -99,49 +97,43 @@ public class ValueItrAgent extends Agent {
 			Enumeration<Integer> keys = stateValues.keys();			
 			Integer key;
 			Double oldValue, newValue;
-			
+
+			// iterate over all states in the stateValue table.
 			while(keys.hasMoreElements()){
 				key = keys.nextElement();
 				oldValue = stateValues.get(key);
-				updateValue(key);
+				updateValue(key); // Calcluate the new value for the current key
 				newValue = stateValues.get(key);
-				deltaValue = Math.max(Math.abs(oldValue-newValue), deltaValue);
+				deltaValue = Math.max(Math.abs(oldValue-newValue), deltaValue); // track largest change in value
 			}	
 		}
 	}
 	
+	// Update the value in the value table. This is the update step in the value iteration algorithm.
 	private void updateValue(Integer key) {
 		// Create an instance of a game that matches the current key.
 		Game game = gameFromKey(key);
-		
-		if(key == genStateKey(new int[] {2,0,1,0,1,1,2,0,0})){
-			System.out.print("Found It!");
-		}
-		
+		// if the current game is a terminal state, assign the reward for that state as this state's value.
 		if(game.evaluateGameState() != Consts.GameInProgress){
 			stateValues.put(key, (double)getReward(game));
 			return;
 		}
 		
 		// initialize Value Iteration parameters.
-		// if X is moving, we're looking for max move. If O is moving, looking for min move.
-		Double bestReward = (game.getCurrentTeam() == Consts.TeamX) ? -20.0 : 20.0; 
+		Double maxReward = -20.0;
 		Double moveValue;
 		
-		int bestAction = Consts.NoMove;
+		int maxAction;
 		
 		// find the action with the best reward.
 		for(int move : game.possibleMoves()){
 			Game nextTurn = game.simulateMove(move);
 			moveValue = (double)getReward(nextTurn);
 			if(nextTurn.evaluateGameState() != Consts.GameInProgress){
-				if(moveValue > bestReward && game.getCurrentTeam() == Consts.TeamX){
-					bestReward = moveValue;
-					bestAction = move;
-				}
-				else if(moveValue < bestReward && game.getCurrentTeam() == Consts.TeamO){
-					bestReward = moveValue;
-					bestAction = move;
+				// track the best reward and the move that returns that reward.
+				if(moveValue > maxReward){
+					maxReward = moveValue;
+					maxAction = move;
 				}
 				continue;
 			}
@@ -155,33 +147,20 @@ public class ValueItrAgent extends Agent {
 			// multiplied by the discount factor.
 			for(Pair<Game, Double> successor : successorStates){
 				try{
-					if(genStateKey(successor.fst.getBoard()) == genStateKey(new int[] {2,1,1,2,1,0,2,0,0}))
-						System.out.println(getValue(successor.fst));
 					moveValue += Consts.DiscountFactor * getValue(successor.fst) * successor.snd; // snd is transition probability
 				} catch(InvalidMoveException e){
 					System.out.println(e.getMessage());
 					e.printStackTrace();
 				}
 			}
-			if(moveValue > bestReward){
-				bestReward = moveValue;
-				bestAction = move;
+			// track the best move. 
+			if(moveValue > maxReward){
+				maxReward = moveValue;
+				maxAction = move;
 			}		
 		}
 		// update value table.
-		stateValues.put(key, bestReward);
-	}
-
-	// Given a gameState hash key, create a game with equivalent state.
-	private Game gameFromKey(Integer key) {
-		// convert ternary key to game board representation. Create a new game with that board.
-		int[] board = new int[9];
-		Integer remainingKey = key;
-		for(int i=board.length-1; i>=0; i--){
-			board[i] = (int) Math.floor(remainingKey/Math.pow(3, i));
-			remainingKey -= Math.pow(3, i) * board[i];
-		}
-		return new Game(this, opponent, board);
+		stateValues.put(key, maxReward);
 	}
 
 	public void printState(int[] board){
@@ -206,12 +185,7 @@ public class ValueItrAgent extends Agent {
 		Integer[] possibleMoves = game.possibleMoves();
 		Double maxVal = -99.0; // initialize to an large negative number. All possible states will have higher value than this.
 		int bestMove = Consts.NoMove;  
-		
-		if(genStateKey(game.getBoard()) == genStateKey(new int[] {2,0,1,0,1,0,2,0,0})){
-			System.out.print("Found It!");
-		}
-		
-		
+				
 		// iterate over all possible moves and select the one with the highest value.
 		for(int moveIndex=0; moveIndex<possibleMoves.length; moveIndex++){
 			try{
@@ -258,88 +232,44 @@ public class ValueItrAgent extends Agent {
 		return reward;
 	}
 
-	/*
-	 * This function generates a state key based on the current game state, as represented by the game board.
-	 * Each of the nine spaces in the game board can be one of three states ÐÊblank, X or O. We therefore 
-	 * treat the spaces as digits in a ternary (base three) number, and calculate the decimal equivalent of 
-	 * that number. This guarantees that each game state has a different integer key.
-	 * 
-	 * Each state has up to eight equivalent rotations and reflections in the state space, however only one 
-	 * of these is represented in our state-value hashtable. Therefore, we calculate the keys of all 
-	 * equivalent states and always return the smallest key. 
-	 * 
-	 * This both guarantees that we can minimize our state space and increases the algorithms rate of 
-	 * learning by allowing it to update the value for multiple game states simultaneously.  
-	 */
+	// This function generates a unique integer representation of the given game board. 
+	//  It interprets a Game's "board" array as the digits of a ternary (base three) number and returns 
+	//  the decimal representation of that number. This is used to calculate game state hash values.
 	private int genStateKey(int[] board){
-				
-//		int maxKey = -1; // smaller than the smallest possible key.
-//		int keyHash = 0;
-//		// perform all possible rotations and reflections and return the smallest key.
-//
-//		for(int reflections = 0; reflections <= 1; reflections++){ // once without reflection, once with.
-//			for(int rotations = 0; rotations <= 3; rotations++)    // once for each rotation.				
-//				keyHash = ternaryToDecimal(rotateAndReflect(board, rotations, reflections));
-//				if (keyHash > maxKey)
-//					maxKey = keyHash;
-//		}
-//		return maxKey;
-		
-		return(ternaryToDecimal(board));
-	}
-	
-//	private int[] rotateAndReflect(int[] board, int rotations, int reflect) {
-//		int[] newBoard = new int[board.length];
-//		
-//		// perform reflection, if specified
-//		if(reflect == 1){
-//			// swap 0 and 2 across the vertical axis.
-//			newBoard[0] = board[2];
-//			newBoard[2] = board[0];
-//			// swap 3 and 5 across the vertical axis.
-//			newBoard[3] = board[5];
-//			newBoard[5] = board[3];
-//			// swap 6 and 8 across the vertical axis.
-//			newBoard[6] = board[8];
-//			newBoard[8] = board[6];
-//			// center spaces stay the same.
-//			newBoard[1] = board[1];
-//			newBoard[4] = board[4];
-//			newBoard[7] = board[7];
-//			
-//			return rotateAndReflect(newBoard, rotations, --reflect); // call recursively
-//		}
-//		// perform rotation if required.
-//		else if(rotations > 0){
-//			// rotate corners clockwise
-//			newBoard[0] = board[6];
-//			newBoard[6] = board[8];
-//			newBoard[8] = board[2];
-//			newBoard[2] = board[0];
-//			// rotate non-corners clockwise
-//			newBoard[1] = board[3];
-//			newBoard[3] = board[7];
-//			newBoard[7] = board[5];
-//			newBoard[5] = board[1];
-//			// center square stays the same
-//			newBoard[4] = board[4];
-//			return rotateAndReflect(newBoard, --rotations, reflect); // call recursively
-//		}
-//		else
-//			return board; // base case.
-//	}
-
-	/* This method interprets a Game's "board" array as the digits of a ternary (base three) number and returns 
-	 * the decimal representation of that number. This is used to calculate game state hash values.
-	 */
-	private int ternaryToDecimal(int[] gameBoard){
 		int hashVal = 0;
-		for(int i=0; i<gameBoard.length; i++){
-			hashVal += gameBoard[i]*(Math.pow(3,i));
+		for(int i=0; i<board.length; i++){
+			hashVal += board[i]*(Math.pow(3,i));
 		}
 		return hashVal;
 	}
+	
+	// Given a gameState hash key, create a game with equivalent state. Performs the reverse action described
+	//  by the genStateKey method.
+	private Game gameFromKey(Integer key) {
+		// convert ternary key to game board representation. Create a new game with that board.
+		int[] board = new int[9];
+		int xCount = 0, oCount = 0;
+		Integer remainingKey = key;
+		// iterate over the game board
+		for(int i=board.length-1; i>=0; i--){
+			// each value corresponds to the next power of 3.
+			board[i] = (int) Math.floor(remainingKey/Math.pow(3, i));
+			remainingKey -= Math.pow(3, i) * board[i];
+			if(board[i] == Consts.MoveX)
+				xCount++;
+			else if(board[i] == Consts.MoveO)
+				oCount++;
+		}
+		
+		Game game;
+		if(xCount > oCount)
+			game = new Game(opponent, this, board);
+		else
+			game = new Game(this, opponent, board);
+		return game;
+	}
 
+	// Cannot predict successor states before agent has been trained.
 	public ArrayList<Pair<Game, Double>> getSuccessorStates(Game game) {
 		return null;
 	}

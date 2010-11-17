@@ -48,8 +48,10 @@ public abstract class RandomAgent extends Agent {
 		return selectedMove;
 	}
 	
+	// A defensive move is a move that would prevent an opponent from winning. This detects a defensive move
+	//  on the current game board, or returns Consts.NoMove if one cannot be found. 
 	protected int pickDefensiveMove(Game game) {
-		int moveType = (game.getCurrentTeam() == Consts.TeamX)? Consts.MoveO : Consts.MoveX;
+		int moveType = (game.getNextMove() == Consts.MoveX)? Consts.MoveO : Consts.MoveX;
 		// check for blocking moves at each spot. If one is found, return that move.
 		for(int move=0; move<Consts.NumSquares; move++){
 			if(game.simulateMove(move, moveType).evaluateGameState() == Consts.GameLost)
@@ -58,8 +60,10 @@ public abstract class RandomAgent extends Agent {
 		return Consts.NoMove; // if no blocking moves are found, return NoMove to indicate that no moves were found.
 	}
 	
+	// An aggressive move is a move that would allow the agent to win the game. This detects an aggressive move
+	//  on the current game board, or returns Consts.NoMove if one cannot be found. 
 	protected int pickAggressiveMove(Game game) {
-		int moveType = (game.getCurrentTeam() == Consts.TeamO)? Consts.MoveO : Consts.MoveX;
+		int moveType = (game.getNextMove() == Consts.MoveO)? Consts.MoveO : Consts.MoveX;
 		// Check for winning moves at each spot. If one is found, return that move.
 		for(int move=0; move<Consts.NumSquares; move++){
 			if(game.simulateMove(move, moveType).evaluateGameState() == Consts.GameWon)
@@ -68,15 +72,13 @@ public abstract class RandomAgent extends Agent {
 		return Consts.NoMove; // if no winning moves are found, return NoMove to indicate that no moves were found.
 	}
 		
+	// Allows an agent to select a move with a certain probability. The input 'move' is selected with a probability
+	//  of one-in-'odds', and a random move is selected otherwise.
 	protected int selectMoveOrRandom(int move, int odds, Game game){
 		// pick a random move with a 1 in odds chance, otherwise return move.
 		if (r.nextInt(odds)==0)
 			return pickRandomMove(game);
 		else
 			return move;
-	}
-	
-	public void reportAction(Game currentGame, Game oldGame) {
-		// We don't care about the last move, so do nothing.
 	}
 }

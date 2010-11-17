@@ -1,3 +1,31 @@
+/* 
+ * Tic Tac Toe ÐÊA simple machine learning simulator.
+ * 
+ * Class: PolicyItrAgent
+ * 
+ * This agent uses machine learning to "learn" how to win Tic Tac Toe. The algorithm used is Policy Iteration.
+ * Policy iteration is a variant on value iteration. Instead of iteratively updating the value of each state, each state
+ * is assigned an action. The value of the current policy is calculated, and then a new policy is chosen that is optimal
+ * for the new set of values. Because this does not require the stateValue table to completely converge, but rather only 
+ * requires it to converge "enough" that the optimal policy is found, this can be done in fewer iterations than 
+ * value iteration. 
+ * 
+ * This algorithm is an offline, model based algorithm. The optimal policy of the agent is calculated when the agent
+ * is initialized, and relies on have the game and opposing agent be fully observable. By observing the game board and
+ * being able to predict the transition probability of an opponents moves, this agent can learn a policy that will 
+ * maximize its expected reward.
+ *  
+ * More information about policy iteration can be found here: http://webdocs.cs.ualberta.ca/~sutton/book/ebook/node43.html
+ *  
+ * Note: This agent does not play a "perfect" game of tic tac toe. Rather, it attempts to maximize its expected reward.
+ *  This results in the agent winning frequently against the "Random" agents, but occasionally losing because of the
+ *  random nature of the opponents.
+ * 
+ * Author: 	Toby Waite
+ * Contact: toby.waite@gmail.com 
+ * Updated: November 16th, 2010.
+ */
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -7,7 +35,8 @@ import com.sun.tools.javac.util.Pair;
 
 public class PolicyItrAgent extends Agent {
 
-
+	// A hashtable is used to store the state values and state policy for tic tac toe. This allows us to store only
+	// values of reachable game states (5478 states), rather than all 19,683 (3^9) possible configurations of the 3x3 grid.
 	private Hashtable<Integer, Double> stateValues; // maps a game state to a expected value for reaching that state.
 	private Hashtable<Integer, Integer> statePolicy; // maps a game state to the current policy at that state.
 	private Agent opponent;
@@ -18,6 +47,7 @@ public class PolicyItrAgent extends Agent {
 		statePolicy = new Hashtable<Integer, Integer>();
 	}
 	
+	// initialize the agent. First, we explore the state space, then we perform policy iteration over that space.
 	public void initialize(Agent enemyAgent){
 		// current opponent required for Machine Learning model.
 		opponent = enemyAgent;
@@ -56,28 +86,24 @@ public class PolicyItrAgent extends Agent {
 		}
 	}
 
-	/* Teach the agent an optimal policy for playing Tic Tac Toe. 
-	 
-  	   This uses a policy iteration algorithm. An initial policy is chosen arbitrarily. The value of the current
-  	   policy is executed for each game state, and the policy is updated to select a policy with maximum value.
-	
-	   Please see http://webdocs.cs.ualberta.ca/~sutton/book/ebook/node43.html for more information 
-	   on the details of the Policy Iteration algorithm.
-	*/	
+	// This implements the policy iteration algorithm (described above) to teach the agent an optimal policy.
 	private void trainAgent() {
 				
 		int iterations = 0;
 		
 		boolean aPolicyChanged = true;
+		// iterate algorithm until none of the policies in the table change between iterations.
 		while(aPolicyChanged && iterations < 25){
 			aPolicyChanged = false;
 			iterations++;
+
+			// Calculate the value of the current policy at each state, and update the value table.
+			evaluatePolicy(); // "evaluation step"
 			
-			evaluatePolicy(); // updates the value table for the current policy.
-			
-			Enumeration<Integer> keys = stateValues.keys();			
+			Enumeration<Integer> keys = statePolicy.keys();			
 			Integer key;
 			boolean thisPolicyChanged;
+			// iterate over all policies, calculating the optimal policy given the current value table.
 			while(keys.hasMoreElements()){
 				key = keys.nextElement();
 				thisPolicyChanged = updatePolicy(key);
@@ -87,6 +113,7 @@ public class PolicyItrAgent extends Agent {
 		}
 	}
 
+	// evaluate the current policy and calculate the current value of the policy at each state.
 	private void evaluatePolicy() {
 		Double deltaValue = 1.0;
 		Double maxDelta = 0.0;
@@ -100,16 +127,18 @@ public class PolicyItrAgent extends Agent {
 			Integer key;
 			Double oldValue, newValue;
 			
+			// iterate over all values in the stateValue table, as in Value Iteration.
 			while(keys.hasMoreElements()){
 				key = keys.nextElement();
 				oldValue = stateValues.get(key);
-				updateValue(key);
+				updateValue(key); // update value
 				newValue = stateValues.get(key);
-				deltaValue = Math.max(Math.abs(oldValue-newValue), deltaValue);
+				deltaValue = Math.max(Math.abs(oldValue-newValue), deltaValue); // track largest value change.
 			}	
 		}		
 	}
 
+	// update value based on the reward for reaching the input state, and the expected rewared for successive states.
 	private void updateValue(Integer key) {		
 		// Create an instance of a game that matches the current key.
 		Game game = gameFromKey(key);
@@ -122,12 +151,13 @@ public class PolicyItrAgent extends Agent {
 			stateValues.put(key, (double)Consts.RewardOther);
 			return;
 		}
-
+		// if we've reached a terminal state,  return the reward for reaching that state.
 		if(game.evaluateGameState() != Consts.GameInProgress){
 			stateValues.put(key, (double)getReward(game));
 			return;
 		}
 		
+		// Get all successor states.
 		ArrayList<Pair<Game, Double>> successorStates = opponent.getSuccessorStates(game);
 		
 		Double currentValue = (double)getReward(game);
@@ -145,7 +175,7 @@ public class PolicyItrAgent extends Agent {
 		stateValues.put(key, currentValue);
 	}
 
-	// determine the policy that currently yields the highest value.
+	// Determine the policy that currently yields the highest value.
 	private boolean updatePolicy(Integer key) {
 		Game game = gameFromKey(key);
 		int currentPolicy = statePolicy.get(key);
@@ -164,7 +194,6 @@ public class PolicyItrAgent extends Agent {
 				}
 				continue;
 			}
-			
 			for(Pair<Game, Double> successor : opponent.getSuccessorStates(nextTurn)){
 				try{
 					moveValue += Consts.DiscountFactor * getValue(successor.fst) * successor.snd; // snd is transition probability
@@ -177,37 +206,14 @@ public class PolicyItrAgent extends Agent {
 				currentValue = moveValue;
 				updatedPolicy = move;
 			}
-
 		}
-		
+		// Update statePolicy table
 		statePolicy.put(key, updatedPolicy);
-		
-		return (currentPolicy != updatedPolicy);
+		return (currentPolicy != updatedPolicy); // true if something changed.
 	}
 	
-	// Given a gameState hash key, create a game with equivalent state.
-	private Game gameFromKey(Integer key) {
-		// convert ternary key to game board representation. Create a new game with that board.
-		int[] board = new int[9];
-		int xCount = 0, oCount = 0;
-		Integer remainingKey = key;
-		for(int i=board.length-1; i>=0; i--){
-			board[i] = (int) Math.floor(remainingKey/Math.pow(3, i));
-			remainingKey -= Math.pow(3, i) * board[i];
-			if(board[i] == Consts.MoveX)
-				xCount++;
-			else if(board[i] == Consts.MoveO)
-				oCount++;
-		}
-		
-		Game game;
-		if(xCount > oCount)
-			game = new Game(opponent, this, board);
-		else
-			game = new Game(this, opponent, board);
-		return game;
-	}
 
+	// print the current game state.
 	public void printState(int[] board){
 		
 		String[] strBoard = new String[board.length];
@@ -226,6 +232,7 @@ public class PolicyItrAgent extends Agent {
 		System.out.println();
 	}
 
+	// to pick a move, simply follow the action in the converged statePolicy table.
 	public int pickMove(Game game) {
 		return statePolicy.get(genStateKey(game.getBoard()));
 	}
@@ -257,88 +264,43 @@ public class PolicyItrAgent extends Agent {
 		return reward;
 	}
 
-	/*
-	 * This function generates a state key based on the current game state, as represented by the game board.
-	 * Each of the nine spaces in the game board can be one of three states ÐÊblank, X or O. We therefore 
-	 * treat the spaces as digits in a ternary (base three) number, and calculate the decimal equivalent of 
-	 * that number. This guarantees that each game state has a different integer key.
-	 * 
-	 * Each state has up to eight equivalent rotations and reflections in the state space, however only one 
-	 * of these is represented in our state-value hashtable. Therefore, we calculate the keys of all 
-	 * equivalent states and always return the smallest key. 
-	 * 
-	 * This both guarantees that we can minimize our state space and increases the algorithms rate of 
-	 * learning by allowing it to update the value for multiple game states simultaneously.  
-	 */
+	// This function generates a unique integer representation of the given game board. 
+	//  It interprets a Game's "board" array as the digits of a ternary (base three) number and returns 
+	//  the decimal representation of that number. This is used to calculate game state hash values.
 	private int genStateKey(int[] board){
-				
-//		int maxKey = -1; // smaller than the smallest possible key.
-//		int keyHash = 0;
-//		// perform all possible rotations and reflections and return the smallest key.
-//
-//		for(int reflections = 0; reflections <= 1; reflections++){ // once without reflection, once with.
-//			for(int rotations = 0; rotations <= 3; rotations++)    // once for each rotation.				
-//				keyHash = ternaryToDecimal(rotateAndReflect(board, rotations, reflections));
-//				if (keyHash > maxKey)
-//					maxKey = keyHash;
-//		}
-//		return maxKey;
-		
-		return(ternaryToDecimal(board));
-	}
-	
-//	private int[] rotateAndReflect(int[] board, int rotations, int reflect) {
-//		int[] newBoard = new int[board.length];
-//		
-//		// perform reflection, if specified
-//		if(reflect == 1){
-//			// swap 0 and 2 across the vertical axis.
-//			newBoard[0] = board[2];
-//			newBoard[2] = board[0];
-//			// swap 3 and 5 across the vertical axis.
-//			newBoard[3] = board[5];
-//			newBoard[5] = board[3];
-//			// swap 6 and 8 across the vertical axis.
-//			newBoard[6] = board[8];
-//			newBoard[8] = board[6];
-//			// center spaces stay the same.
-//			newBoard[1] = board[1];
-//			newBoard[4] = board[4];
-//			newBoard[7] = board[7];
-//			
-//			return rotateAndReflect(newBoard, rotations, --reflect); // call recursively
-//		}
-//		// perform rotation if required.
-//		else if(rotations > 0){
-//			// rotate corners clockwise
-//			newBoard[0] = board[6];
-//			newBoard[6] = board[8];
-//			newBoard[8] = board[2];
-//			newBoard[2] = board[0];
-//			// rotate non-corners clockwise
-//			newBoard[1] = board[3];
-//			newBoard[3] = board[7];
-//			newBoard[7] = board[5];
-//			newBoard[5] = board[1];
-//			// center square stays the same
-//			newBoard[4] = board[4];
-//			return rotateAndReflect(newBoard, --rotations, reflect); // call recursively
-//		}
-//		else
-//			return board; // base case.
-//	}
-
-	/* This method interprets a Game's "board" array as the digits of a ternary (base three) number and returns 
-	 * the decimal representation of that number. This is used to calculate game state hash values.
-	 */
-	private int ternaryToDecimal(int[] gameBoard){
 		int hashVal = 0;
-		for(int i=0; i<gameBoard.length; i++){
-			hashVal += gameBoard[i]*(Math.pow(3,i));
+		for(int i=0; i<board.length; i++){
+			hashVal += board[i]*(Math.pow(3,i));
 		}
-		return hashVal;
+		return hashVal;	
+	}
+	// Given a gameState hash key, create a game with equivalent state. Performs the reverse action described
+	//  by the genStateKey method.
+	private Game gameFromKey(Integer key) {
+		// convert ternary key to game board representation. Create a new game with that board.
+		int[] board = new int[9];
+		int xCount = 0, oCount = 0;
+		Integer remainingKey = key;
+		// iterate over the game board
+		for(int i=board.length-1; i>=0; i--){
+			// each value corresponds to the next power of 3.
+			board[i] = (int) Math.floor(remainingKey/Math.pow(3, i));
+			remainingKey -= Math.pow(3, i) * board[i];
+			if(board[i] == Consts.MoveX)
+				xCount++;
+			else if(board[i] == Consts.MoveO)
+				oCount++;
+		}
+		
+		Game game;
+		if(xCount > oCount)
+			game = new Game(opponent, this, board);
+		else
+			game = new Game(this, opponent, board);
+		return game;
 	}
 
+	// Cannot predict successor states before agent has been trained.
 	public ArrayList<Pair<Game, Double>> getSuccessorStates(Game game) {
 		return null;
 	}
