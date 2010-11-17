@@ -1,4 +1,4 @@
-JFLAGS = -d ./bin -sourcepath ./src
+JFLAGS = -d . -sourcepath ./src
 JC = javac
 .SUFFIXES: .java .class
 .java.class:

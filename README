@@ -20,7 +20,7 @@ This program can be built from the TicTacToe directory by executing the 'make'  
 
 Usage:
 
-Use the following command to run a TicTacToe simulation from inside the TicTacToe/bin directory:
+Use the following command to run a TicTacToe simulation from inside the TicTacToe directory:
 
 java TicTacToe <opponent> <numGames> <ourAgent>
 
