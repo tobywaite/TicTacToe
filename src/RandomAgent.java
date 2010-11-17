@@ -49,7 +49,7 @@ public abstract class RandomAgent extends Agent {
 	}
 	
 	protected int pickDefensiveMove(Game game) {
-		int moveType = (game.getNextMove() == Consts.MoveX)? Consts.MoveO : Consts.MoveX;
+		int moveType = (game.getCurrentTeam() == Consts.TeamX)? Consts.MoveO : Consts.MoveX;
 		// check for blocking moves at each spot. If one is found, return that move.
 		for(int move=0; move<Consts.NumSquares; move++){
 			if(game.simulateMove(move, moveType).evaluateGameState() == Consts.GameLost)
@@ -59,7 +59,7 @@ public abstract class RandomAgent extends Agent {
 	}
 	
 	protected int pickAggressiveMove(Game game) {
-		int moveType = (game.getNextMove() == Consts.MoveO)? Consts.MoveO : Consts.MoveX;
+		int moveType = (game.getCurrentTeam() == Consts.TeamO)? Consts.MoveO : Consts.MoveX;
 		// Check for winning moves at each spot. If one is found, return that move.
 		for(int move=0; move<Consts.NumSquares; move++){
 			if(game.simulateMove(move, moveType).evaluateGameState() == Consts.GameWon)

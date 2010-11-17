@@ -1,22 +1,3 @@
-/* 
- * 	Tic Tac Toe ÐÊA simple machine learning simulator.
- * 
- * This program allows two agents to play each other in a game of Tic Tac Toe. 
- * A number of naive agents have been implemented that perform a mix of random and simple rule based policies. 
- * These include RandomAgent, DefensiveAgent, AgressiveAgent, and BalancedAgent. Two "smarter" agents have been 
- * implemented that attempt to learn the best policy based on their previous results. These agents include 
- * PolicyItrAgent and ValueItrAgent which implement the Policy Iteration and Value Iteration machine learning 
- * algorithms respectively.
- * 
- * Author: 	Toby Waite
- * Contact: toby.waite@gmail.com 
- * Date: 	November 5th, 2010.
- */
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 public class TicTacToe {
 
 	private int numGames;
@@ -55,7 +36,7 @@ public class TicTacToe {
 			printUsage();
 			System.exit(1);
 		}
-
+		
 		match.run();
 		match.computeResults();
 		match.showResults();
@@ -75,6 +56,7 @@ public class TicTacToe {
 			case Consts.OpponentHuman:		opponent = new HumanAgent(); break;
 			default: throw new ParameterException("Opponent number (" + opp + ") out of range!");
 		}
+		opponent.setTeam(Consts.TeamO);
 	}
 	
 	private void setNumGames(int n) throws ParameterException{
@@ -94,6 +76,7 @@ public class TicTacToe {
 			case Consts.AgentHuman:		ourAgent = new HumanAgent(); break;
 			default: throw new ParameterException("Agent number out of range!");
 		}
+		ourAgent.setTeam(Consts.TeamX);
 	}
 	
 	private void run(){

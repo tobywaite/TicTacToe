@@ -114,25 +114,34 @@ public class ValueItrAgent extends Agent {
 		// Create an instance of a game that matches the current key.
 		Game game = gameFromKey(key);
 		
+		if(key == genStateKey(new int[] {2,0,1,0,1,1,2,0,0})){
+			System.out.print("Found It!");
+		}
+		
 		if(game.evaluateGameState() != Consts.GameInProgress){
 			stateValues.put(key, (double)getReward(game));
 			return;
 		}
 		
 		// initialize Value Iteration parameters.
-		Double maxReward = -20.0;
+		// if X is moving, we're looking for max move. If O is moving, looking for min move.
+		Double bestReward = (game.getCurrentTeam() == Consts.TeamX) ? -20.0 : 20.0; 
 		Double moveValue;
 		
-		int maxAction = Consts.NoMove;
+		int bestAction = Consts.NoMove;
 		
 		// find the action with the best reward.
 		for(int move : game.possibleMoves()){
 			Game nextTurn = game.simulateMove(move);
 			moveValue = (double)getReward(nextTurn);
 			if(nextTurn.evaluateGameState() != Consts.GameInProgress){
-				if(moveValue > maxReward){
-					maxReward = moveValue;
-					maxAction = move;
+				if(moveValue > bestReward && game.getCurrentTeam() == Consts.TeamX){
+					bestReward = moveValue;
+					bestAction = move;
+				}
+				else if(moveValue < bestReward && game.getCurrentTeam() == Consts.TeamO){
+					bestReward = moveValue;
+					bestAction = move;
 				}
 				continue;
 			}
@@ -146,42 +155,33 @@ public class ValueItrAgent extends Agent {
 			// multiplied by the discount factor.
 			for(Pair<Game, Double> successor : successorStates){
 				try{
+					if(genStateKey(successor.fst.getBoard()) == genStateKey(new int[] {2,1,1,2,1,0,2,0,0}))
+						System.out.println(getValue(successor.fst));
 					moveValue += Consts.DiscountFactor * getValue(successor.fst) * successor.snd; // snd is transition probability
 				} catch(InvalidMoveException e){
 					System.out.println(e.getMessage());
 					e.printStackTrace();
 				}
 			}
-			if(moveValue > maxReward){
-				maxReward = moveValue;
-				maxAction = move;
+			if(moveValue > bestReward){
+				bestReward = moveValue;
+				bestAction = move;
 			}		
 		}
 		// update value table.
-		stateValues.put(key, maxReward);
+		stateValues.put(key, bestReward);
 	}
 
 	// Given a gameState hash key, create a game with equivalent state.
 	private Game gameFromKey(Integer key) {
 		// convert ternary key to game board representation. Create a new game with that board.
 		int[] board = new int[9];
-		int xCount = 0, oCount = 0;
 		Integer remainingKey = key;
 		for(int i=board.length-1; i>=0; i--){
 			board[i] = (int) Math.floor(remainingKey/Math.pow(3, i));
 			remainingKey -= Math.pow(3, i) * board[i];
-			if(board[i] == Consts.MoveX)
-				xCount++;
-			else if(board[i] == Consts.MoveO)
-				oCount++;
 		}
-		
-		Game game;
-		if(xCount > oCount)
-			game = new Game(opponent, this, board);
-		else
-			game = new Game(this, opponent, board);
-		return game;
+		return new Game(this, opponent, board);
 	}
 
 	public void printState(int[] board){
@@ -206,7 +206,12 @@ public class ValueItrAgent extends Agent {
 		Integer[] possibleMoves = game.possibleMoves();
 		Double maxVal = -99.0; // initialize to an large negative number. All possible states will have higher value than this.
 		int bestMove = Consts.NoMove;  
-				
+		
+		if(genStateKey(game.getBoard()) == genStateKey(new int[] {2,0,1,0,1,0,2,0,0})){
+			System.out.print("Found It!");
+		}
+		
+		
 		// iterate over all possible moves and select the one with the highest value.
 		for(int moveIndex=0; moveIndex<possibleMoves.length; moveIndex++){
 			try{

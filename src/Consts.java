@@ -22,6 +22,7 @@ public final class Consts{
 	// team names
 	public static final int TeamX = 0;
 	public static final int TeamO = 1;
+	public static final int TeamNone = 2;
 	
 	// board location values
 	public static final int MoveEmpty = 0;
