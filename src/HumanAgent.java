@@ -15,7 +15,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import com.sun.tools.javac.util.Pair;
 
 public class HumanAgent extends Agent {
 
@@ -53,14 +52,14 @@ public class HumanAgent extends Agent {
 	// Assume human agent acts randomly for purposes of determining transition probability.
 	//  The Machine Learning algorithms implemented are model based algorithms, so something must
 	//  be assumed even though, in this case, it is clearly false.
-	public ArrayList<Pair<Game, Double>> getSuccessorStates(Game game) {
+	public ArrayList<TransitionPair> getSuccessorStates(Game game) {
 		
 		Integer[] moves = game.possibleMoves();		
-		ArrayList<Pair<Game, Double>> sStates = new ArrayList<Pair<Game, Double>>(moves.length);
+		ArrayList<TransitionPair> sStates = new ArrayList<TransitionPair>(moves.length);
 		
 		// return all possible moves, indicating equal probability for each move.
 		for (int i = 0; i<moves.length; i++){
-			Pair<Game, Double> state = new Pair<Game, Double>(game.simulateMove(moves[i]), 1.0/moves.length);
+			TransitionPair state = new TransitionPair(game.simulateMove(moves[i]), 1.0/moves.length);
 			sStates.add(state);
 		}
 		return sStates;

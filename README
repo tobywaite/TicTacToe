@@ -16,15 +16,13 @@ the game. These agents are described below.
 
 Installation:
 
-This program can be installed from the TicTacToe directory by executing the following command:
-
-javac -d ./bin/ ./src/TicTacToe.java
+This program can be built from the TicTacToe directory by executing the 'make'  command.
 
 Usage:
 
-Use the following command to run a TicTacToe simulation:
+Use the following command to run a TicTacToe simulation from inside the TicTacToe/bin directory:
 
-java src/TicTacToe <opponent> <numGames> <ourAgent>
+java TicTacToe <opponent> <numGames> <ourAgent>
 
 where <opponent> is the number of the opposing agent, <numGames> is the number
 of successive simulations to run, and <ourAgent> is the number specifying our 
@@ -60,17 +58,21 @@ If a blocking move is found, it executes that move with 80% probability and
 moves randomly with 20% probability. If neither a winning move nor a blocking 
 move are found, the agent simply moves randomly.
 
+5 - HumanAgent: This agent allows a human to select moves commands from the commandline.
+
 OurAgents:
 
 0 - RandomAgent: This agent acts randomly, as the RandomAgent above in the opponents section.
 
 1 - ValItrAgent: This agent is unimplemented. It will attempt to learn an 
 optimal policy for moving by using the Value Iteration algorithm from machine 
-learning.
+learning. 
 
 2 - PolItrAgent: This agent is unimplemented. It will attempt to learn an 
 optimal policy for moving by using the Policy Iteration algorithm from machine 
 learning.
+
+3 - HumanAgent: This agent allows a human to enter moves from the command line.
 
 
 Notes:

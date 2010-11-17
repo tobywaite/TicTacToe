@@ -16,7 +16,6 @@
  */
 
 import java.util.ArrayList;
-import com.sun.tools.javac.util.Pair;
 
 public class BalancedAgent extends RandomAgent {
 	
@@ -40,12 +39,12 @@ public class BalancedAgent extends RandomAgent {
 	// For a given game, returns a set of games that includes the result of all possible moves by this agent. Each
 	//  of those moves is encapsulated in a Pair with the probability of that move being selected. The chance of
 	//  a move being selected is calculated based on the rules described above.
-	public ArrayList<Pair<Game, Double>> getSuccessorStates(Game game) { 
+	public ArrayList<TransitionPair> getSuccessorStates(Game game) { 
 		
 		Integer[] moves = game.possibleMoves();
 		int numMoves = moves.length;
 		Double totalProbability = 1.0;
-		ArrayList<Pair<Game, Double>> sStates = new ArrayList<Pair<Game, Double>>(moves.length);		
+		ArrayList<TransitionPair> sStates = new ArrayList<TransitionPair>(moves.length);		
 
 		// check for aggressive move
 		int balMove = pickAggressiveMove(game);
@@ -53,7 +52,7 @@ public class BalancedAgent extends RandomAgent {
 		if (balMove != Consts.NoMove){
 			totalProbability -= 0.8;
 			// if aggressive move exists, its chance of being picked is 80% + the chance of it being picked randomly.
-			sStates.add(new Pair<Game, Double>(game.simulateMove(balMove), 0.8 + totalProbability/numMoves)); 
+			sStates.add(new TransitionPair(game.simulateMove(balMove), 0.8 + totalProbability/numMoves)); 
 		}
 		else{
 			// check for defensive move.
@@ -61,13 +60,13 @@ public class BalancedAgent extends RandomAgent {
 			if (balMove != Consts.NoMove){
 				totalProbability -= 0.8;
 				// if aggressive move exists, its chance of being picked is 80% + the chance of it being picked randomly.
-				sStates.add(new Pair<Game, Double>(game.simulateMove(balMove), 0.8 + totalProbability/numMoves)); 
+				sStates.add(new TransitionPair(game.simulateMove(balMove), 0.8 + totalProbability/numMoves)); 
 			}
 		}
 		// distribute remaining probability over remaining moves.
 		for (int i = 0; i<moves.length; i++){
 			if(moves[i] != balMove){
-				sStates.add(new Pair<Game, Double>(game.simulateMove(moves[i]), totalProbability/numMoves));
+				sStates.add(new TransitionPair(game.simulateMove(moves[i]), totalProbability/numMoves));
 			}
 		}
 		return sStates;

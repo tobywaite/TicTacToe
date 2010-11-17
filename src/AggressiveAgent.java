@@ -15,7 +15,6 @@
  */
 
 import java.util.ArrayList;
-import com.sun.tools.javac.util.Pair;
 
 public class AggressiveAgent extends RandomAgent {
 
@@ -34,24 +33,24 @@ public class AggressiveAgent extends RandomAgent {
 	// For a given game, returns a set of games that includes the result of all possible moves by this agent. Each
 	//  of those moves is encapsulated in a Pair with the probability of that move being selected. The chance of
 	//  a move being selected is calculated based on the rules described above.
-	public ArrayList<Pair<Game, Double>> getSuccessorStates(Game game) { 
+	public ArrayList<TransitionPair> getSuccessorStates(Game game) { 
 
 		Integer[] moves = game.possibleMoves();
 		int numMoves = moves.length;
 		Double totalProbability = 1.0;
-		ArrayList<Pair<Game, Double>> sStates = new ArrayList<Pair<Game, Double>>(moves.length);
+		ArrayList<TransitionPair> sStates = new ArrayList<TransitionPair>(moves.length);
 
 		int aggMove = pickAggressiveMove(game);
 
 		// if an aggressive move exists, the probability of selecting that move will be 80% + the chance of it being randomly selected.
 		if (aggMove != Consts.NoMove){
 			totalProbability -= 0.8;
-			sStates.add(new Pair<Game, Double>(game.simulateMove(aggMove), 0.8 + totalProbability/numMoves));
+			sStates.add(new TransitionPair(game.simulateMove(aggMove), 0.8 + totalProbability/numMoves));
 		}
 		// distribute remaining probability evenly over all remaining states. 
 		for (int i = 0; i<moves.length; i++){
 			if(moves[i] != aggMove){
-				sStates.add(new Pair<Game, Double>(game.simulateMove(moves[i]), totalProbability/numMoves));
+				sStates.add(new TransitionPair(game.simulateMove(moves[i]), totalProbability/numMoves));
 			}
 		}
 		return sStates;

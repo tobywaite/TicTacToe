@@ -4,13 +4,13 @@
  * Class: ValueItrAgent
  * 
  * This agent uses machine learning to "learn" how to win Tic Tac Toe. The algorithm used is Value Iteration.
- * The agent receives a reward for reaching each game state. Reaching a winning state returns a large positive reward,
- * reaching a losing state receives a large negative reward, a tying game returns a small positive reward, and any
- * other state returns a small negative reward. Each state is initialized to a random value, and the value of each 
- * state is iteratively updated based on the reward for reaching that state and the expected value of subsequent
- * states. Over a number of iterations, the value table converges to an optimal set of values. 
- * Once the value table has converged to its final value, the optimal policy for the agent can be executed by selecting
- * the move out of all possible moves that has the largest expected value.
+ *  The agent receives a reward for reaching each game state. Reaching a winning state returns a large positive reward,
+ *  reaching a losing state receives a large negative reward, a tying game returns a small positive reward, and any
+ *  other state returns a small negative reward. Each state is initialized to a random value, and the value of each 
+ *  state is iteratively updated based on the reward for reaching that state and the expected value of subsequent
+ *  states. Over a number of iterations, the value table converges to an optimal set of values. 
+ *  Once the value table has converged to its final value, the optimal policy for the agent can be executed by selecting
+ *  the move out of all possible moves that has the largest expected value.
  * 
  *  This algorithm is an offline, model based algorithm. The optimal policy of the agent is calculated when the agent
  *  is initialized, and relies on have the game and opposing agent be fully observable. By observing the game board and
@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Random;
-import com.sun.tools.javac.util.Pair;
 
 public class ValueItrAgent extends Agent {
 
@@ -139,15 +138,15 @@ public class ValueItrAgent extends Agent {
 			}
 			
 			// ask opponent for transition probabilities to all next states for our best move.
-			ArrayList<Pair<Game, Double>> successorStates = 
+			ArrayList<TransitionPair> successorStates = 
 				opponent.getSuccessorStates(nextTurn);
 
 			// The value of the current square is the reward for the last action plus the sum of the value 
 			// over all possible successor states weighted by each state's transition probability and
 			// multiplied by the discount factor.
-			for(Pair<Game, Double> successor : successorStates){
+			for(TransitionPair successor : successorStates){
 				try{
-					moveValue += Consts.DiscountFactor * getValue(successor.fst) * successor.snd; // snd is transition probability
+					moveValue += Consts.DiscountFactor * getValue(successor.game) * successor.probability; 
 				} catch(InvalidMoveException e){
 					System.out.println(e.getMessage());
 					e.printStackTrace();
@@ -254,7 +253,7 @@ public class ValueItrAgent extends Agent {
 		for(int i=board.length-1; i>=0; i--){
 			// each value corresponds to the next power of 3.
 			board[i] = (int) Math.floor(remainingKey/Math.pow(3, i));
-			remainingKey -= Math.pow(3, i) * board[i];
+			remainingKey -= (int) Math.pow(3, i) *board[i];
 			if(board[i] == Consts.MoveX)
 				xCount++;
 			else if(board[i] == Consts.MoveO)
@@ -269,8 +268,12 @@ public class ValueItrAgent extends Agent {
 		return game;
 	}
 
-	// Cannot predict successor states before agent has been trained.
-	public ArrayList<Pair<Game, Double>> getSuccessorStates(Game game) {
-		return null;
+	// use the current policy to determine which move the agent will return. 
+	public ArrayList<TransitionPair> getSuccessorStates(Game game) {
+		int pickedMove = pickMove(game); // pick move based on current policy.
+		Game pickedGame = game.simulateMove(pickedMove);
+		ArrayList<TransitionPair> returnList = new ArrayList<TransitionPair>(1); 
+		returnList.add(new TransitionPair(pickedGame, 1.0)); // will return picked move with 100% probability.
+		return returnList;
 	}
 }

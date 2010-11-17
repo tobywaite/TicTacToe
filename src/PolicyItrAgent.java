@@ -31,8 +31,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Random;
 
-import com.sun.tools.javac.util.Pair;
-
 public class PolicyItrAgent extends Agent {
 
 	// A hashtable is used to store the state values and state policy for tic tac toe. This allows us to store only
@@ -158,14 +156,14 @@ public class PolicyItrAgent extends Agent {
 		}
 		
 		// Get all successor states.
-		ArrayList<Pair<Game, Double>> successorStates = opponent.getSuccessorStates(game);
+		ArrayList<TransitionPair> successorStates = opponent.getSuccessorStates(game);
 		
 		Double currentValue = (double)getReward(game);
 		
 		// sum expected value over the successor states, weighted by each states transition probability.
-		for(Pair<Game, Double> successor : successorStates){
+		for(TransitionPair successor : successorStates){
 			try{
-				currentValue += Consts.DiscountFactor * getValue(successor.fst) * successor.snd; // snd is transition probability
+				currentValue += Consts.DiscountFactor * getValue(successor.game) * successor.probability;
 			} catch(InvalidMoveException e){
 				System.out.println(e.getMessage());
 				e.printStackTrace();
@@ -194,9 +192,9 @@ public class PolicyItrAgent extends Agent {
 				}
 				continue;
 			}
-			for(Pair<Game, Double> successor : opponent.getSuccessorStates(nextTurn)){
+			for(TransitionPair successor : opponent.getSuccessorStates(nextTurn)){
 				try{
-					moveValue += Consts.DiscountFactor * getValue(successor.fst) * successor.snd; // snd is transition probability
+					moveValue += Consts.DiscountFactor * getValue(successor.game) * successor.probability;
 				} catch(InvalidMoveException e){
 					System.out.println(e.getMessage());
 					e.printStackTrace();
@@ -285,7 +283,7 @@ public class PolicyItrAgent extends Agent {
 		for(int i=board.length-1; i>=0; i--){
 			// each value corresponds to the next power of 3.
 			board[i] = (int) Math.floor(remainingKey/Math.pow(3, i));
-			remainingKey -= Math.pow(3, i) * board[i];
+			remainingKey -= (int) Math.pow(3, i) * board[i];
 			if(board[i] == Consts.MoveX)
 				xCount++;
 			else if(board[i] == Consts.MoveO)
@@ -300,8 +298,12 @@ public class PolicyItrAgent extends Agent {
 		return game;
 	}
 
-	// Cannot predict successor states before agent has been trained.
-	public ArrayList<Pair<Game, Double>> getSuccessorStates(Game game) {
-		return null;
+	// use the current policy to determine which move the agent will return. 
+	public ArrayList<TransitionPair> getSuccessorStates(Game game) {
+		int pickedMove = pickMove(game); // pick move based on current policy.
+		Game pickedGame = game.simulateMove(pickedMove);
+		ArrayList<TransitionPair> returnList = new ArrayList<TransitionPair>(1); 
+		returnList.add(new TransitionPair(pickedGame, 1.0)); // will return picked move with 100% probability.
+		return returnList;
 	}
 }

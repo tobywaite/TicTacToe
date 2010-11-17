@@ -1,10 +1,10 @@
 public final class Consts{
 	// Opponent types
-	public static final int OpponentRandom = 0;
-	public static final int OpponentDefensive = 1;
-	public static final int OpponentAggressive = 2;
-	public static final int OpponentBalanced = 3;
-	public static final int OpponentHuman = 4;
+	public static final int OpponentRandom = 1;
+	public static final int OpponentDefensive = 2;
+	public static final int OpponentAggressive = 3;
+	public static final int OpponentBalanced = 4;
+	public static final int OpponentHuman = 5;
 	// Our agent types
 	public static final int AgentRandom= 0;
 	public static final int AgentValItr = 1;

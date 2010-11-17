@@ -190,13 +190,6 @@ public class Game{
 			}
 		}
 		
-		// indicate current game state.
-		System.out.print("Game State: ");
-		if (gameState == Consts.GameWon) System.out.println("Won!");
-		else if(gameState == Consts.GameLost) System.out.println("Lost.");
-		else if(gameState == Consts.GameTied) System.out.println("Tied.");
-		else System.out.println("In Progress");
-		
 		// print out a pretty picture!
 		System.out.println(strBoard[0] + "|" + strBoard[1] + "|" + strBoard[2]);
 		System.out.println(strBoard[3] + "|" + strBoard[4] + "|" + strBoard[5]);

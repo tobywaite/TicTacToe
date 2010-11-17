@@ -26,5 +26,5 @@ public abstract class Agent {
 	
 	// Given a current game state, return all possible next states and the probability
 	//  of transitioning to that state.
-	public abstract ArrayList<Pair<Game, Double>> getSuccessorStates(Game game);
+	public abstract ArrayList<TransitionPair> getSuccessorStates(Game game);
 }
